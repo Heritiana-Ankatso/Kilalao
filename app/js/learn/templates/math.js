@@ -4,6 +4,7 @@
 // ctx.pick(ok). It may return { help } — an async demonstration shown after a
 // first wrong answer (for example, counting the objects together).
 import { s, C, replay } from '../../lib.js';
+import { makeFox } from '../characters.js';
 import { ink, obj, moveObj, scatter, frames, drawFrames, blocks, numeral, fractionGlyph, card, near, shuffle, randInt, KIND_NAMES, INK, STAGE, CHOICE_Y } from '../draw.js';
 
 const pickKind = (rng) => KIND_NAMES[Math.floor(rng() * KIND_NAMES.length)];
@@ -121,9 +122,8 @@ export const TEMPLATES = {
           const kind = pickKind(rng);
           const total = Math.min(n + 3, 14);
           // The friend asking, with a speech bubble that shows the number and that many dots.
-          const fox = s('g', null, ctx.layer);
-          fox.inner = s('g', { class: 'fbb' }, fox);
-          drawFriend(fox.inner, 1330, 520);
+          const fox = ctx.addRig ? ctx.addRig(makeFox(ctx.layer, 1340, 742, 0.82, ctx.calm)) : makeFox(ctx.layer, 1340, 742, 0.82, ctx.calm);
+          fox.lookAt({ x: 1080, y: 600 });
           const bub = s('g', null, ctx.layer);
           s('path', ink({ d: 'M1170 170 h320 a30 30 0 0 1 30 30 v150 a30 30 0 0 1 -30 30 h-120 l-30 40 l-10 -40 h-160 a30 30 0 0 1 -30 -30 v-150 a30 30 0 0 1 30 -30 z', fill: C.white }, 4), bub);
           numeral(bub, n, 1250, 275, 110, C.terra);
@@ -153,6 +153,7 @@ export const TEMPLATES = {
             o.style.transition = 'transform .35s ease';
             o.dataset.inb = o.inBasket ? '1' : '';
             replay(o.inner, 'hop'); ctx.tick(); refresh();
+            if (o.inBasket) { fox.lean(true); clearTimeout(fox.state.leanT); fox.state.leanT = setTimeout(() => fox.lean(false), 500); }
           };
           items.forEach((o) => { o.style.transition = 'transform .35s ease'; o.classList.add('tap'); o.addEventListener('pointerdown', (e) => { e.preventDefault(); toggle(o); }); });
           // "Give" button: a basket with an arrow to the friend.
@@ -161,8 +162,8 @@ export const TEMPLATES = {
           give.g.addEventListener('pointerdown', (e) => {
             e.preventDefault();
             const ok = inBasket.length === n;
-            if (ok) { replay(fox.inner, 'hop'); inBasket.forEach((o) => { o.style.transition = 'transform .6s ease, opacity .6s'; moveObj(o, 1330, 470); o.style.opacity = 0; }); }
-            else replay(fox.inner, 'wiggle');
+            if (ok) { fox.happy(); inBasket.forEach((o) => { o.style.transition = 'transform .6s ease, opacity .6s'; moveObj(o, 1340, 600); o.style.opacity = 0; }); }
+            else fox.puzzled();
             ctx.pick(ok, give);
           });
           ctx.correct(give);
@@ -585,15 +586,4 @@ function drawFraction(parent, shape, k, d, cx, cy) {
     }
   }
   return parts;
-}
-
-// The friend who asks for things in the "give" activity.
-function drawFriend(g, x, y) {
-  s('path', ink({ d: `M${x - 70} ${y - 40} L${x - 60} ${y - 120} L${x - 20} ${y - 80} Z M${x + 70} ${y - 40} L${x + 60} ${y - 120} L${x + 20} ${y - 80} Z`, fill: C.terra }, 4), g);
-  s('ellipse', ink({ cx: x, cy: y + 120, rx: 80, ry: 90, fill: C.terra }, 4), g);
-  s('ellipse', { cx: x, cy: y + 140, rx: 46, ry: 60, fill: C.cream }, g);
-  s('circle', ink({ cx: x, cy: y - 20, r: 82, fill: C.terra }, 4), g);
-  s('path', ink({ d: `M${x - 60} ${y + 10} Q${x} ${y + 60} ${x + 60} ${y + 10} Q${x} ${y + 40} ${x - 60} ${y + 10} Z`, fill: C.cream }, 3), g);
-  for (const sx of [-1, 1]) s('circle', { cx: x + sx * 30, cy: y - 30, r: 8, fill: INK }, g);
-  s('ellipse', { cx: x, cy: y + 8, rx: 10, ry: 7, fill: INK }, g);
 }

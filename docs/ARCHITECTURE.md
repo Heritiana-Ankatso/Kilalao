@@ -85,6 +85,13 @@ toys/learn.js ── profiles.js   children on this device (localStorage kilalao
 - **The guide's hand** (`handPointer` in `draw.js`) moves with a CSS transition above the activity. `ctx.point(target)` moves it to a target; `ctx.press(target, action?)` moves, presses, then runs `action` or dispatches `pointerdown` on the target.
 - **Templates** generate items from a random source, so practice never repeats exactly. Each returns `help` (teaches the method on this example), optionally `solve` (the full worked example) and `guided`. A template draws in the 1600 × 900 world. Its answers go through `ctx.choices(values, render, answer)` (answer cards) or `ctx.pick(ok, card)` (custom interactions such as building with blocks). It may return `help()`, which runs after a first wrong answer.
 - **Voice:** `clipPlan()` splits each prompt into fixed phrases and value clips (`p/add.0`, `n/7`, `f/3-4`). If every clip exists in `app/audio/manifest.json`, the recordings play back to back. Otherwise the device voice is used when it supports the language (`audio.hasVoice`). Otherwise nothing is spoken.
+- **Characters** (`characters.js` on `rig.js`):
+  - Each character is data: a list of parts with parents, explicit pivots and draw functions.
+  - The runtime composes three layers per part. *base* is the rest pose. *idle* is recomputed every frame (breathing, blink timers, gaze, ear flicks, and tufts or a tail that follow a beat behind). *act* is tweened for acting beats (`rig.to`, `rig.all`, `rig.seq`, with `sine`, `out`, `in` and `back` easing).
+  - Rotation and translation add up across the layers; scale and opacity multiply.
+  - The owl exposes `talk`, `lookAt`, `point`, `nod`, `think`, `hop` and `rest`. The fox exposes `lean`, `happy` and `puzzled`.
+  - The lesson runner ticks every on-screen rig and drives them: talk while prompting, look and point at the hand's target, nod on a right answer, think before the help.
+  - Avatars are static drawings with a CSS eyelid blink.
 - **Privacy:** profiles and the attempt log (the last 1,500 answers) stay in `localStorage` and never leave the device.
 
 ## Android wrapper

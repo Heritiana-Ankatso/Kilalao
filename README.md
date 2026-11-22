@@ -40,6 +40,16 @@ A short review of earlier skills closes the lesson. A skill the child already ha
 - **Three languages:** English, French and Malagasy prompts and number words. Recorded voice packs are used when present (needed for Malagasy, see `app/audio/README.md`), otherwise the device voice, otherwise silence. From age 7 the question is also shown as text.
 - **Adult report:** each child's skills are listed as secure, in practice, assumed from age or not started, with recent accuracy and what they are working on.
 
+**The cast.** Every character is a rigged SVG puppet with separate parts and pivots, animated in three layers:
+- *idle*: breathing, blinking, glancing at what is happening;
+- *acting*: talking, pointing, leaning;
+- *reactions*: a warm nod or a small hop for a right answer, a curious "hmm" for a wrong one.
+
+The characters are:
+- **the guide owl:** patient and slow-moving, with a teal scarf and a curious head tilt;
+- **the fox:** eager and quick, with a swaying tail and flicking ears; it leans towards the basket as things go in;
+- **eight child animals:** fox, owl, turtle, cat, frog, bear, whale and bee, each with a distinct silhouette and a soft blink.
+
 **Phase 1: Math, 39 skills from age 3 to about 10,** built from 11 activity templates. Reading, logic and coding, and social-emotional learning follow. See [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## The 17 toys
@@ -184,6 +194,7 @@ docs/ARCHITECTURE.md     How the pieces fit together
 tools/shoot.py           Headless smoke test and screenshots
 tools/learn-test.py      Plays every Learn skill (wrong answer, help, right answers)
 tools/recording-script.mjs  Prints the voice-recording script for a language
+.claude/skills/          Third-party animation and character-design skills for Claude Code (MIT, see README there)
 .github/workflows/       GitHub Pages deployment and Android builds
 ```
 

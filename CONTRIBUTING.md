@@ -28,6 +28,15 @@ Contributions are welcome, including new toys, fixes, accessibility work and tra
 - Every prompt must exist in English, French and Malagasy. Mark new French and Malagasy strings for native-speaker review in the pull request.
 - New skills need an adult-facing description, a typical age and prerequisites. Ask a teacher to review the sequence.
 
+**Characters and motion**
+
+The repository ships Claude Code skills in `.claude/skills/` (`character-appeal`, `animator-traditional`, `anticipation-payoff`, `timing-mastery`, `motion-design`). Use them for character and animation work, with Kilalao's overrides from `.claude/skills/README.md`:
+- the calm timing profile;
+- no animation libraries;
+- respect calm mode and reduced motion.
+
+Give every character a clear silhouette, a personal tempo and one signature gesture. Reactions to wrong answers are curious, never sad.
+
 ## Technical rules
 
 - Vanilla ES modules, no dependencies, no build step, no external assets or fonts. Sounds are synthesized with `audio.js` and art is drawn in SVG or canvas.

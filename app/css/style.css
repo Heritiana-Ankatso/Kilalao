@@ -335,3 +335,8 @@ body.calm .hopLoop { animation-duration: 6s; }
 @keyframes invite { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.12); } }
 .invite { animation: invite 1.4s ease-in-out infinite; }
 body.calm .invite { animation-duration: 2.6s; }
+
+/* Learn avatars: a soft, unhurried blink (eyelid scales down from the top) */
+@keyframes blink { 0%, 93%, 100% { transform: scaleY(0); } 96% { transform: scaleY(1); } }
+.lid { transform-box: fill-box; transform-origin: 50% 0; transform: scaleY(0); animation: blink 6s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .lid { animation: none; } }
