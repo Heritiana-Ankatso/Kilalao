@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#efe4cf"/>
+  <circle cx="150" cy="120" r="120" fill="#ffffff" opacity=".35"/>
+  <g stroke="#4a3f35" stroke-width="12" stroke-linejoin="round" stroke-linecap="round">
+    <!-- three toys on the shelf: a ball, a stacking block and a little tree -->
+    <circle cx="142" cy="282" r="62" fill="#c97b63"/>
+    <path d="M100 262 q42 -30 84 0" fill="none" stroke-width="8" opacity=".5"/>
+    <rect x="214" y="216" width="104" height="128" rx="14" fill="#d8a650"/>
+    <rect x="236" y="182" width="60" height="34" rx="10" fill="#5e8f8f"/>
+    <path d="M354 344 L394 206 L434 344 Z" fill="#93ab8b"/>
+    <!-- the wooden shelf -->
+    <rect x="62" y="344" width="388" height="40" rx="14" fill="#c9a073"/>
+    <path d="M96 384 v38 M416 384 v38" stroke-width="14"/>
+  </g>
+</svg>

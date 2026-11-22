@@ -3,7 +3,9 @@
 
 Usage: python3 tools/shoot.py [http://localhost:4210] [toy ...]
 Needs: pip install playwright && playwright install chromium
+(or set CHROMIUM=/path/to/chrome to use an existing browser binary)
 """
+import os
 import sys
 import pathlib
 from playwright.sync_api import sync_playwright
@@ -17,7 +19,14 @@ TOYS = ['busyboard', 'shapes', 'blocks', 'silly', 'marble', 'town', 'house', 'co
 
 errors = []
 with sync_playwright() as p:
-    b = p.chromium.launch(args=['--autoplay-policy=no-user-gesture-required'])
+    args = ['--autoplay-policy=no-user-gesture-required']
+    exe = os.environ.get('CHROMIUM') or next((c for c in ['/opt/pw-browsers/chromium'] if os.path.exists(c)), None)
+    try:
+        b = p.chromium.launch(args=args)
+    except Exception:
+        if not exe:
+            raise
+        b = p.chromium.launch(args=args, executable_path=exe)
     page = b.new_page(viewport={'width': 1280, 'height': 800}, has_touch=False)
     page.on('pageerror', lambda e: errors.append(f'pageerror: {e}'))
     page.on('console', lambda m: m.type == 'error' and 'sw.js' not in m.text and errors.append(f'console: {m.text}'))
