@@ -23,13 +23,34 @@ Kilalao draws on Montessori and low-stimulation ideas about play:
 | Limits set by adults | A daily play-time limit lets the toys gently fall asleep instead of cutting play off abruptly. |
 | Inclusion | People in Town and House have a range of skin tones and hair. Some wear glasses or hearing aids, and some use a wheelchair or a prosthetic leg. |
 
-## Learn: lessons on an adaptive path (ages 3–12)
+## Learn: an educational game (ages 3–12)
 
-The first item on the shelf, **Learn**, teaches. Each lesson works on one skill and follows the sequence teachers call *I do, we do, you do*:
+The first item on the shelf, **Learn**, is a quest game in which the maths *is* the gameplay.
+
+**The quest village.**
+- The guide owl sits by a small village. Two or three animal friends wait on the path, each with a picture bubble showing what they need: apples counted into a basket, a number built from tens and ones, fruit shared fairly.
+- The child chooses who to help. Every offer comes from their adaptive path: the next skill, a nearby skill, or a review marked with a circular arrow.
+- Helping a friend is the lesson. Afterwards the friend moves into a house and flowers grow.
+- There are no points, stars, streaks or badges. The research on children's motivation (Self-Determination Theory) shows these can crowd out a child's own interest, so the reward is a friend helped and a village that comes to life.
+
+**Each quest is a lesson.** It follows the sequence teachers call *I do, we do, you do*:
 
 1. **Watch:** a guide owl solves one example while a hand shows every step. It touches each apple as it counts, drops objects into the basket, or points at the parts of a fraction. Children who cannot read, or whose device has no voice, can still see what to do.
 2. **Together:** the child does two examples with support. Objects pulse until each one has been touched and numbered. The fox's request dots fill as apples go into the basket. The running total shows while building with tens and ones. For the other activities, the guide works through the method on the new example first, then the child gives the answer.
 3. **Your turn:** independent practice. Only these answers update the progress record. After a first wrong answer, the guide's hand demonstrates the method on that same example, for instance counting together or adding apples until the basket matches.
+
+**Hints are a ladder, not an answer key.**
+1. *Look again:* what matters glows.
+2. *First step:* the hand starts, then hands back.
+3. *Show me:* a full demonstration.
+
+The child always gives the final answer, and the hint level needed appears in the adult report.
+
+**Flow within a lesson.** Two misses in a row bring the guided support back and use smaller numbers. Being stuck twice ends the quest gently, and the path then offers an easier skill.
+
+**Feedback is specific and about the process** ("You touched each one once", "You kept trying and found it"), never "You're so clever".
+
+The full rationale and evidence are in [docs/PEDAGOGY.md](docs/PEDAGOGY.md).
 
 A short review of earlier skills closes the lesson. A skill the child already has in practice starts at *Together*. A small marker at the top shows the stage without words: the owl with an eye, the owl with the child's animal, or the child's animal alone.
 
@@ -191,6 +212,7 @@ app/                     Everything that is served (deployed as-is)
   audio/                 Optional recorded voice packs (manifest.json + clips)
 android/                 Native Android wrapper (WebView + bundled app/)
 docs/ARCHITECTURE.md     How the pieces fit together
+docs/PEDAGOGY.md         Teaching and game-design principles, with evidence
 tools/shoot.py           Headless smoke test and screenshots
 tools/learn-test.py      Plays every Learn skill (wrong answer, help, right answers)
 tools/recording-script.mjs  Prints the voice-recording script for a language

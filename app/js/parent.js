@@ -139,15 +139,21 @@ function renderProfiles(box, redraw) {
   const opt = (v, cur, label) => `<option value="${v}" ${String(v) === String(cur) ? 'selected' : ''}>${label}</option>`;
   box.innerHTML = profiles.list().map((p) => {
     const sum = mastery.summary(MATH, p.id, p);
-    const recent = profiles.log(p.id).filter((e) => e.t > Date.now() - 7 * 86400000);
+    const week = profiles.log(p.id).filter((e) => e.t > Date.now() - 7 * 86400000);
+    const recent = week.filter((e) => 'ok' in e); // first answers to independent items
     const acc = recent.length ? Math.round((100 * recent.filter((e) => e.ok).length) / recent.length) : null;
+    // Hint ladder evidence: how much help items needed (0 none, 1 look again, 2 first step, 3 demonstration, 4 shown)
+    const hints = week.filter((e) => 'hint' in e);
+    const helped = hints.filter((e) => e.hint > 0).length, heavy = hints.filter((e) => e.hint >= 3).length;
+    const helpLine = hints.length ? ` Help needed on ${helped} of ${hints.length} items${heavy ? ` (${heavy} needed a full demonstration)` : ''}.` : '';
+    const quests = ((p.village && p.village.helped) || []).length;
     const rows = sum.rows.map((r) => `<tr><td>${esc(r.skill.desc)}</td><td>${r.skill.age}</td><td>${r.status === 'assumed' ? 'assumed (age)' : r.status}</td><td>${r.n ? `${r.c}/${r.n}` : ''}</td></tr>`).join('');
     return `<div class="profile" data-id="${p.id}">
       <label class="row-set"><span>Name</span><input type="text" data-f="name" value="${esc(p.name)}" maxlength="30"></label>
       <label class="row-set"><span>Age</span><select data-f="age">${[3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((a) => opt(a, p.age, a)).join('')}</select></label>
       <label class="row-set"><span>Language</span><select data-f="lang">${Object.entries(LANGS).map(([k, v]) => opt(k, p.lang, v.name)).join('')}</select></label>
       <label class="row-set"><span>Animal</span><select data-f="avatar">${profiles.AVATARS.map((a) => opt(a, p.avatar, a)).join('')}</select></label>
-      <p><b>Math:</b> ${sum.mastered} of ${MATH.length} skills secure, ${sum.practising} in practice${sum.assumed ? `, ${sum.assumed} assumed from age (checked gradually in review)` : ''}.${acc !== null ? ` Last 7 days: ${recent.length} answers, ${acc}% right first time.` : ' No practice yet.'}</p>
+      <p><b>Math:</b> ${sum.mastered} of ${MATH.length} skills secure, ${sum.practising} in practice${sum.assumed ? `, ${sum.assumed} assumed from age (checked gradually in review)` : ''}.${acc !== null ? ` Last 7 days: ${recent.length} answers, ${acc}% right first time.` : ' No practice yet.'}${helpLine}${quests ? ` Friends helped in the village: ${quests}.` : ''}</p>
       <p class="muted">Working on: ${sum.next.length ? sum.next.map((s) => esc(s.desc)).join('; ') : 'everything in this track is secure'}.</p>
       <details><summary>All math skills</summary><table class="skills"><tr><th>Skill</th><th>Age</th><th>Status</th><th>Right</th></tr>${rows}</table></details>
       <div class="btns"><button class="btn" data-remove>Remove this child</button></div>

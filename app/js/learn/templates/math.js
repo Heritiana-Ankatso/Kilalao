@@ -97,6 +97,11 @@ export const TEMPLATES = {
           }
           return {
             guided: !P.flash,
+            fb: P.flash ? 'fbLook' : 'fbCount',
+            // Hint 1 (look again): the objects not yet counted glow; nothing is given away.
+            cue: async () => { if (cloth) { cloth.remove(); cloth = null; } objs.filter((o) => !o.counted).forEach((o) => o.inner.classList.add('invite')); ctx.say('touchCount'); await ctx.wait(1400); },
+            // Hint 2 (first step): the hand counts the first two, then hands back to the child.
+            step: async () => { if (cloth) { cloth.remove(); cloth = null; } let k = 0; for (const o of objs) { if (k >= 2) break; if (!o.counted) { await ctx.press(o, () => countObj(o)); k++; } } },
             help: async () => { if (cloth) { cloth.remove(); cloth = null; } ctx.say('together'); await ctx.wait(1100); await countAll(); await ctx.wait(500); ctx.say('lastNumber'); await ctx.wait(1400); },
             solve: async () => {
               if (P.flash) { await ctx.wait(2400); if (cloth) { cloth.remove(); cloth = null; } }
@@ -177,6 +182,16 @@ export const TEMPLATES = {
           if (ctx.mode === 'together') items.forEach((o) => o.inner.classList.add('invite'));
           return {
             guided: true, // the dots in the bubble fill as the child adds objects
+            ownFriend: true,
+            fb: 'fbGive',
+            // Hint 1: the request dots fill to show how many are in the basket now (one-to-one match).
+            cue: async () => { dots.forEach((d, i) => d.setAttribute('fill', i < inBasket.length ? C.terra : C.white)); fox.lean(true); ctx.later(800, () => fox.lean(false)); ctx.say('give', { n }); await ctx.wait(1600); },
+            // Hint 2: the hand adds or removes just one, towards the right number.
+            step: async () => {
+              if (inBasket.length > n) { const o = inBasket[inBasket.length - 1]; await ctx.press(o, () => toggle(o)); }
+              else { const o = items.find((q) => !q.inBasket); if (o) await ctx.press(o, () => toggle(o)); }
+              dots.forEach((d, i) => d.setAttribute('fill', i < inBasket.length ? C.terra : C.white));
+            },
             help: async () => {
               // Count what is in the basket, then add or take away until it matches.
               ctx.say('give', { n }); await ctx.wait(1500);
@@ -330,6 +345,14 @@ export const TEMPLATES = {
           const vals = shuffle(rng, [ans, ...near(rng, ans, 2, 0, P.max + 10, spread)]);
           ctx.choices(vals, digits(110), ans);
           return {
+            fb: 'fbJoin',
+            // Hint 1: the groups that matter glow (both groups for adding, what is left for taking away).
+            cue: async () => { if (objs.length) { objs.forEach((o) => replay(o.inner, 'hop')); await ctx.wait(900); } else { ctx.say(add ? 'add' : 'sub', { a, b }); await ctx.wait(1500); } },
+            // Hint 2: the hand counts the first group only; the child carries on.
+            step: async () => {
+              if (P.visual && objs.length) { const firstGroup = add ? objs.slice(0, a) : objs.slice(0, Math.min(2, objs.length)); await countTogether(ctx, firstGroup); }
+              else { const g = s('g', { class: 'fb popin' }, ctx.layer); blocks(g, a, 560, 330, 22); await ctx.wait(1500); }
+            },
             help: async () => {
               if (P.visual && objs.length) { ctx.say('together'); await ctx.wait(1200); await countTogether(ctx, objs); }
               else {
@@ -425,6 +448,15 @@ export const TEMPLATES = {
           };
           return {
             guided: true, // in "together" the running total is shown while building
+            fb: 'fbBuild',
+            // Hint 1: show the running total under the tray, so the child can compare.
+            cue: async () => { showLive = true; redraw(); replay(binT.inner, 'wiggle'); await ctx.wait(1200); },
+            // Hint 2: the hand sets the tens right; the child does the ones.
+            step: async () => {
+              showLive = true; redraw();
+              while (tens < Math.floor(n / 10)) await ctx.press(binT);
+              while (tens > Math.floor(n / 10)) await ctx.press(trayG.querySelector('g.tap'));
+            },
             help: async () => { showLive = true; redraw(); ctx.say('build', { n }); await ctx.wait(1200); await buildIt(); await ctx.wait(800); },
             solve: async () => { showLive = true; redraw(); await ctx.wait(1200); await buildIt(); await ctx.wait(800); await ctx.press(ok); },
           };

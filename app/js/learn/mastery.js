@@ -99,7 +99,7 @@ export function summary(skills, pid, profile) {
 // ("watch"), the child does two with support ("together"), then practises
 // alone ("own"). A skill already in practice skips the demonstration. Only
 // "own" answers are recorded. One or two spaced-review items close the lesson.
-export function planLesson(skills, pid, profile, forced) {
+export function planLesson(skills, pid, profile, forced, withReview = !forced) {
   const f = frontier(skills, pid, profile);
   const d = due(skills, pid, profile);
   const skill = forced || f[0] || d[0] || skills[skills.length - 1];
@@ -108,6 +108,20 @@ export function planLesson(skills, pid, profile, forced) {
   const steps = fresh
     ? [['watch', skill], ['together', skill], ['together', skill], ['own', skill], ['own', skill], ['own', skill], ['own', skill]]
     : [['together', skill], ['own', skill], ['own', skill], ['own', skill], ['own', skill]];
-  if (!forced) d.filter((x) => x !== skill).slice(0, 2).forEach((x) => steps.push(['own', x]));
+  if (withReview) d.filter((x) => x !== skill).slice(0, 2).forEach((x) => steps.push(['own', x]));
   return { skill, steps: steps.map(([mode, s]) => ({ mode, skill: s })) };
+}
+
+// Quests offered in the village: the next skill, a second frontier skill when
+// there is one, and the most overdue review. Every option is useful, so the
+// child's choice is real without leaving the adaptive path.
+export function offerQuests(skills, pid, profile) {
+  const f = frontier(skills, pid, profile), d = due(skills, pid, profile);
+  const out = [];
+  if (f[0]) out.push({ skill: f[0], review: false });
+  if (f[1]) out.push({ skill: f[1], review: false });
+  const r = d.find((x) => !out.some((o) => o.skill === x));
+  if (r) out.push({ skill: r, review: true });
+  if (!out.length) out.push({ skill: skills[skills.length - 1], review: true });
+  return out.slice(0, 3);
 }

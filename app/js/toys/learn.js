@@ -12,6 +12,7 @@ import { MATH } from '../learn/curriculum/math.js';
 import { TEMPLATES } from '../learn/templates/math.js';
 import { ink, card, FONT, CHOICE_Y, handPointer, centerOf } from '../learn/draw.js';
 import { makeOwl, avatar } from '../learn/characters.js';
+import { drawVillage, nextFriends, lessonFriend } from '../learn/village.js';
 export { avatar };
 
 export const SUBJECTS = { math: MATH };
@@ -35,38 +36,84 @@ export default function learn(root, kit) {
   // ---------- Choose who is learning ----------
   function chooseProfile() {
     const list = profiles.list();
-    if (list.length <= 1) { start(profiles.active()); return; }
+    if (list.length <= 1) { home(profiles.active()); return; }
     clear(); fadeIn();
     const n = list.length, w = Math.min(300, 1300 / n);
     list.forEach((p, i) => {
       const x = 800 + (i - (n - 1) / 2) * (w + 20);
       const c = card(layer, x, 450, w, w + 40, C.cream);
       avatar(c.inner, p.avatar, x, 450, w * 0.36);
-      c.g.addEventListener('pointerdown', (e) => { e.preventDefault(); replay(c.inner, 'hop'); sfx.pop(1.1); profiles.setActive(p.id); kit.after(350, () => start(p)); });
+      c.g.addEventListener('pointerdown', (e) => { e.preventDefault(); replay(c.inner, 'hop'); sfx.pop(1.1); profiles.setActive(p.id); kit.after(350, () => home(p)); });
     });
   }
 
-  // ---------- A lesson ----------
-  async function start(profile) {
+  // ---------- The village: choose who to help ----------
+  function home(profile, justHelped) {
     audio.init();
     const skills = SUBJECTS.math;
-    // ?skill=<id> forces one skill (used by tools/learn-test.py and curriculum authors).
+    // ?skill=<id> skips the village (used by tools/learn-test.py and curriculum authors).
     const forced = skills.find((sk) => sk.id === new URLSearchParams(location.search).get('skill'));
-    const lesson = mastery.planLesson(skills, profile.id, profile, forced);
-    let lastMode = null;
-    for (let i = 0; i < lesson.steps.length && alive; i++) {
-      const st = lesson.steps[i];
-      await runItem(profile, st.skill, st.mode, i, lesson.steps, st.mode !== lastMode);
-      lastMode = st.mode;
-    }
-    if (alive) ending(profile);
+    if (forced) { start(profile, { skill: forced, friend: nextFriends(profile, 1)[0], forced: true }); return; }
+    clear(); fadeIn();
+    layer.dataset.mode = 'village';
+    const offers = mastery.offerQuests(skills, profile.id, profile);
+    const friends = nextFriends(profile, offers.length);
+    const quests = offers.map((o, i) => ({ ...o, friend: friends[i] }));
+    const { cards, houses } = drawVillage(layer, profile, quests);
+    const owlHit = s('g', { class: 'tap' }, layer);
+    const owl = makeOwl(owlHit, 150, 885, 0.7, kit.calm);
+    rigs.push(owl);
+    owl.lookAt({ x: 800, y: 720 });
+    const sayChoose = () => { owl.talk(1300); voice.sayPrompt(profile.lang, 'choose'); };
+    owlHit.addEventListener('pointerdown', (e) => { e.preventDefault(); sayChoose(); });
+    cards.forEach((c, i) => c.g.addEventListener('pointerdown', (e) => {
+      e.preventDefault(); replay(c.inner, 'hop'); sfx.pop(1.1);
+      kit.after(400, () => start(profile, quests[i]));
+    }));
+    if (justHelped) {
+      // The friend just helped has moved in: their new house pops up and the owl hops.
+      const house = houses[Math.min(houses.length, ((profile.village && profile.village.helped) || []).length) - 1];
+      if (house && house.inner) { house.inner.classList.add('popin'); }
+      voice.sayPrompt(profile.lang, 'thanks');
+      kit.after(500, () => owl.hop());
+      kit.after(2200, sayChoose);
+    } else kit.after(600, sayChoose);
   }
 
-  function runItem(profile, skill, mode, index, steps, newStage) {
-    return new Promise((resolve) => {
+  // ---------- A quest (one lesson) ----------
+  async function start(profile, quest) {
+    const skills = SUBJECTS.math;
+    const lesson = mastery.planLesson(skills, profile.id, profile, quest.skill, !quest.forced);
+    let lastMode = null, missRun = 0, stuckRun = 0, easier = false;
+    for (let i = 0; i < lesson.steps.length && alive; i++) {
+      const st = lesson.steps[i];
+      // Flow: after two first-try misses in a row, support comes back (guided
+      // mode, smaller numbers) instead of repeating the same difficulty.
+      let mode = st.mode;
+      if (mode === 'own' && missRun >= 2) mode = 'together';
+      const res = await runItem(profile, st.skill, mode, i, lesson.steps, mode !== lastMode, quest, easier && st.skill === lesson.skill);
+      lastMode = mode;
+      if (res.firstOk) { missRun = 0; stuckRun = 0; if (mode === 'own' && res.hint === 0) easier = false; }
+      else { missRun++; easier = true; stuckRun = res.hint >= 3 ? stuckRun + 1 : 0; }
+      // Stuck at the top of the hint ladder twice: stop gently; the path will
+      // offer an easier skill next. No endless repetition.
+      if (stuckRun >= 2) break;
+    }
+    if (!alive) return;
+    if (quest.forced) { ending(profile); return; }
+    const v = profile.village || { helped: [] };
+    v.helped = [...(v.helped || []), { kind: quest.friend, skill: quest.skill.id, t: Date.now() }];
+    profiles.update(profile.id, { village: v });
+    home(profiles.get(profile.id), true);
+  }
+
+  function runItem(profile, skill, mode, index, steps, newStage, quest, easier) {
+    return new Promise((done) => {
       clear(); fadeIn();
       const lang = profile.lang;
-      const item = TEMPLATES[skill.template].make(Math.random, skill.params);
+      const item = TEMPLATES[skill.template].make(Math.random, easier ? easierParams(skill.params) : skill.params);
+      let hintLevel = 0;
+      const resolve = () => done({ firstOk: first && hintLevel === 0, hint: hintLevel });
       progressDots(index, steps);
       stageMarker(mode, profile);
       layer.dataset.mode = mode;
@@ -146,9 +193,13 @@ export default function learn(root, kit) {
           if (ok) {
             solved = true;
             if (mode === 'own' && first) mastery.update(profile.id, skill, profile, true, item.guess);
+            if (mode !== 'watch') profiles.logAttempt(profile.id, { t: Date.now(), s: skill.id, hint: hintLevel, m: mode });
             if (c.bg) c.bg.style.fill = '#dfe9d5';
             replay(c.inner, 'hop');
             owl.rest(); owl.nod();
+            if (friend) friend.happy();
+            // Specific, process-focused feedback (what the child did), never "you're clever".
+            if (mode !== 'watch') voice.sayPrompt(lang, hintLevel ? 'fbKeptGoing' : (out.fb || 'fbLook'));
             sfx.chime([659, 784, 880, 1046][Math.floor(Math.random() * 4)], 0.45);
             await wait(mode === 'watch' ? 1600 : 1100);
             handAway();
@@ -157,20 +208,25 @@ export default function learn(root, kit) {
           }
           replay(c.inner, 'wiggle');
           audio.tone(220, { dur: 0.25, vol: 0.08, type: 'triangle' });
-          if (first) {
-            first = false;
-            if (mode === 'own') mastery.update(profile.id, skill, profile, false, item.guess);
-            locked = true;
-            await owl.think();
-            if (help) await help();
-            handAway(); owl.rest(); owl.lookAt({ x: 800, y: 450 });
-            locked = false;
-          }
-          if (correctCard && correctCard.bg) { correctCard.bg.style.fill = '#e6efd9'; replay(correctCard.inner, 'hop'); }
+          if (friend) friend.puzzled();
+          if (first && mode === 'own') mastery.update(profile.id, skill, profile, false, item.guess);
+          first = false;
+          // Hint ladder, from the least help to the most (the child always gives the answer):
+          //   1 look again: what matters glows   2 first step: the hand starts, then hands back
+          //   3 show me: a full demonstration     4 the right answer glows (no endless loops)
+          hintLevel = Math.min(4, hintLevel + 1);
+          locked = true;
+          if (hintLevel === 1) { await owl.think(); voice.sayPrompt(lang, 'lookAgain'); if (out.cue) await out.cue(); else await wait(900); }
+          else if (hintLevel === 2) { await owl.point({ x: 800, y: 450 }); if (out.step) await out.step(); else if (help) await help(); }
+          else if (hintLevel === 3) { await owl.point({ x: 800, y: 450 }); if (help) await help(); }
+          handAway(); owl.rest(); owl.lookAt({ x: 800, y: 450 });
+          locked = false;
+          if (hintLevel >= 3 && correctCard && correctCard.bg) { correctCard.bg.style.fill = '#e6efd9'; replay(correctCard.inner, 'hop'); }
         },
       };
       const out = item.build(ctx) || {};
       help = out.help || null;
+      const friend = quest && !out.ownFriend ? lessonFriend(layer, quest.friend) : null;
 
       (async () => {
         if (newStage) { owl.talk(1100); voice.sayPrompt(lang, mode === 'watch' ? 'watch' : mode === 'together' ? 'tryTogether' : 'yourTurn'); await wait(1500); }
@@ -236,6 +292,16 @@ export default function learn(root, kit) {
 function eye(g, x, y) {
   s('path', ink({ d: `M${x - 22} ${y} Q${x} ${y - 20} ${x + 22} ${y} Q${x} ${y + 20} ${x - 22} ${y} Z`, fill: C.white }, 3), g);
   s('circle', { cx: x, cy: y, r: 7, fill: C.ink }, g);
+}
+
+// Smaller numbers for the same skill: used after two misses in a row (flow).
+function easierParams(P) {
+  const q = { ...P };
+  if (q.max !== undefined) q.max = Math.max((q.min || 1) + 1, Math.ceil(q.max * 0.6));
+  if (q.maxA !== undefined) q.maxA = Math.max(q.minA || 2, Math.ceil(q.maxA * 0.6));
+  if (q.maxB !== undefined) q.maxB = Math.max(q.minB || 1, Math.ceil(q.maxB * 0.6));
+  if (q.dens) q.dens = q.dens.slice(0, 2);
+  return q;
 }
 
 // ---------- Small drawings ----------

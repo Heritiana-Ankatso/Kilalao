@@ -85,6 +85,15 @@ toys/learn.js ── profiles.js   children on this device (localStorage kilalao
 - **The guide's hand** (`handPointer` in `draw.js`) moves with a CSS transition above the activity. `ctx.point(target)` moves it to a target; `ctx.press(target, action?)` moves, presses, then runs `action` or dispatches `pointerdown` on the target.
 - **Templates** generate items from a random source, so practice never repeats exactly. Each returns `help` (teaches the method on this example), optionally `solve` (the full worked example) and `guided`. A template draws in the 1600 × 900 world. Its answers go through `ctx.choices(values, render, answer)` (answer cards) or `ctx.pick(ok, card)` (custom interactions such as building with blocks). It may return `help()`, which runs after a first wrong answer.
 - **Voice:** `clipPlan()` splits each prompt into fixed phrases and value clips (`p/add.0`, `n/7`, `f/3-4`). If every clip exists in `app/audio/manifest.json`, the recordings play back to back. Otherwise the device voice is used when it supports the language (`audio.hasVoice`). Otherwise nothing is spoken.
+- **Village and quests** (`village.js`):
+  - `offerQuests()` in `mastery.js` offers the next skill, a nearby skill and a review. `nextFriends()` picks animal friends (never the owl guide or the child's own animal).
+  - A finished quest appends `{kind, skill, t}` to `profile.village.helped`, which adds a house and flowers.
+  - In a lesson the friend reacts at the bottom right, unless the template has its own friend (`ownFriend`, e.g. the fox in *give*).
+- **Hint ladder and flow** (`toys/learn.js`):
+  - A wrong answer raises the hint level: 1 calls the template's `cue()`, 2 calls `step()`, 3 calls `help()` and then the right answer glows.
+  - Each solved item logs `{hint, m}` for the adult report.
+  - Two first-try misses in a row turn the next independent item into a guided one with `easierParams()`. Two items that needed level 3 end the quest.
+  - Templates may also return `fb`, a process-feedback prompt key.
 - **Characters** (`characters.js` on `rig.js`):
   - Each character is data: a list of parts with parents, explicit pivots and draw functions.
   - The runtime composes three layers per part. *base* is the rest pose. *idle* is recomputed every frame (breathing, blink timers, gaze, ear flicks, and tufts or a tail that follow a beat behind). *act* is tweened for acting beats (`rig.to`, `rig.all`, `rig.seq`, with `sine`, `out`, `in` and `back` easing).
