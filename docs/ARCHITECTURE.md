@@ -85,6 +85,15 @@ toys/learn.js ── profiles.js   children on this device (localStorage kilalao
 - **The guide's hand** (`handPointer` in `draw.js`) moves with a CSS transition above the activity. `ctx.point(target)` moves it to a target; `ctx.press(target, action?)` moves, presses, then runs `action` or dispatches `pointerdown` on the target.
 - **Templates** generate items from a random source, so practice never repeats exactly. Each returns `help` (teaches the method on this example), optionally `solve` (the full worked example) and `guided`. A template draws in the 1600 × 900 world. Its answers go through `ctx.choices(values, render, answer)` (answer cards) or `ctx.pick(ok, card)` (custom interactions such as building with blocks). It may return `help()`, which runs after a first wrong answer.
 - **Voice:** `clipPlan()` splits each prompt into fixed phrases and value clips (`p/add.0`, `n/7`, `f/3-4`). If every clip exists in `app/audio/manifest.json`, the recordings play back to back. Otherwise the device voice is used when it supports the language (`audio.hasVoice`). Otherwise nothing is spoken.
+- **Reading** (`curriculum/reading.js`, `templates/reading.js`, `pictures.js`):
+  - Skill graphs are per language (`READING.en`, `READING.fr`), with word lists split into sound units. A `_` prefix marks a silent letter.
+  - The device-voice approximations of single sounds are in `PHON`.
+  - The runner passes `ctx.sound(unit)` and `ctx.word(w)`, which play recorded clips `s/<unit>` and `w/<word>` first. An item's `extra(ctx)` speaks the sound or word right after the prompt.
+  - `tracksFor(profile)` in `toys/learn.js` opens reading only in the child's language.
+- **Testing kit** (`report.js`, adult panel):
+  - The runner logs quest events (`ev: start | end | stuck`) and each solved item's hint level and time (`ms`).
+  - Adults add tagged observations (`profiles.addObs`).
+  - `buildReport()` writes an anonymous plain-text summary per child and per skill.
 - **Village and quests** (`village.js`):
   - `offerQuests()` in `mastery.js` offers the next skill, a nearby skill and a review. `nextFriends()` picks animal friends (never the owl guide or the child's own animal).
   - A finished quest appends `{kind, skill, t}` to `profile.village.helped`, which adds a house and flowers.

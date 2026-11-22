@@ -22,6 +22,7 @@ const FILES = [
   'js/learn/rig.js',
   'js/learn/characters.js',
   'js/learn/village.js',
+  'js/learn/report.js',
   'js/learn/curriculum/math.js',
   'js/learn/curriculum/reading.js',
   'js/learn/templates/reading.js',

@@ -71,6 +71,17 @@ The characters are:
 - **the fox:** eager and quick, with a swaying tail and flicking ears; it leans towards the basket as things go in;
 - **eight child animals:** fox, owl, turtle, cat, frog, bear, whale and bee, each with a distinct silhouette and a soft blink.
 
+**Reading (Phase 2).** Reading has 14 English skills (systematic phonics) and 8 French skills (syllabic method), built from 5 activities:
+- *letter sound:* hear a sound, find its letter;
+- *first sound:* find the letter a pictured word starts with;
+- *rhyme:* find the picture that rhymes;
+- *blend:* touch each letter to hear its sound, then find the picture;
+- *spell:* build the word from letter tiles.
+
+French silent letters are shown faded. Reading is offered in the child's own language, English or French. Malagasy reading needs recorded sounds first, and good letter sounds in any language come from recordings; see `app/audio/README.md` and `node tools/recording-script.mjs <lang>`.
+
+**Testing with children.** The adult corner has a *Testing with children* section: one-tap observations, notes, and an anonymous report to copy and share. The protocol is in [docs/CHILD-TESTING.md](docs/CHILD-TESTING.md).
+
 **Phase 1: Math, 39 skills from age 3 to about 10,** built from 11 activity templates. Reading, logic and coding, and social-emotional learning follow. See [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## The 17 toys
@@ -213,6 +224,7 @@ app/                     Everything that is served (deployed as-is)
 android/                 Native Android wrapper (WebView + bundled app/)
 docs/ARCHITECTURE.md     How the pieces fit together
 docs/PEDAGOGY.md         Teaching and game-design principles, with evidence
+docs/CHILD-TESTING.md    How to run a testing session with children and share the report
 tools/shoot.py           Headless smoke test and screenshots
 tools/learn-test.py      Plays every Learn skill (wrong answer, help, right answers)
 tools/recording-script.mjs  Prints the voice-recording script for a language

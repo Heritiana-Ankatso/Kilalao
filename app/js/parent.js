@@ -5,6 +5,7 @@ import * as mastery from './learn/mastery.js';
 import { LANGS } from './learn/i18n.js';
 import { MATH } from './learn/curriculum/math.js';
 import { READING } from './learn/curriculum/reading.js';
+import { TAGS, buildReport, lastQuest } from './learn/report.js';
 
 const HOLD_MS = 2200;
 const NAMES = {
@@ -82,6 +83,17 @@ function panel(card, ctx) {
       <div class="btns"><button class="btn" data-addp>Add a child</button></div>
     </section>
     <section>
+      <h3>Testing with children</h3>
+      <p class="muted">Watching a child play? Tap what you notice; it is saved with the quest they are on. Then build an anonymous report (no names) to copy and share. See docs/CHILD-TESTING.md for the protocol.</p>
+      <label class="row-set"><span>Child</span><select data-obs-child>${profiles.list().map((p) => `<option value="${p.id}">${esc(p.name)} (${p.age})</option>`).join('')}</select></label>
+      <div class="tags">${TAGS.map(([k, label]) => `<button class="btn tag" data-tag="${k}">${label}</button>`).join('')}</div>
+      <p><textarea data-obs-note rows="2" placeholder="A note in your own words (optional)"></textarea></p>
+      <div class="btns"><button class="btn" data-obs-save>Save note</button><button class="btn primary" data-report>Build report</button></div>
+      <p class="muted" data-obs-msg></p>
+      <textarea data-report-out rows="8" readonly hidden></textarea>
+      <div class="btns" data-report-btns hidden><button class="btn" data-copy>Copy report</button><button class="btn" data-obs-clear>Clear observations for this child</button></div>
+    </section>
+    <section>
       <h3>Play time</h3>
       <label class="row-set"><span>Daily limit</span><select data-k="limit">
         ${opt(0, s.limit, 'No limit')}${opt(10, s.limit, '10 minutes')}${opt(20, s.limit, '20 minutes')}${opt(30, s.limit, '30 minutes')}${opt(45, s.limit, '45 minutes')}${opt(60, s.limit, '1 hour')}
@@ -126,6 +138,31 @@ function panel(card, ctx) {
   });
   card.querySelector('[data-more]').onclick = () => { playtime.reset(); ctx.wake(); card.querySelector('[data-more]').textContent = 'Done: the toys are awake'; };
   card.querySelector('[data-close]').onclick = ctx.close;
+  // Testing: observation tags, notes and the anonymous report
+  const who = () => card.querySelector('[data-obs-child]').value;
+  const msg = (m) => { card.querySelector('[data-obs-msg]').textContent = m; };
+  card.querySelectorAll('[data-tag]').forEach((b) => b.addEventListener('click', () => {
+    profiles.addObs(who(), { tag: b.dataset.tag, q: lastQuest(who()) });
+    msg(`Saved: ${b.textContent}`);
+  }));
+  card.querySelector('[data-obs-save]').onclick = () => {
+    const ta = card.querySelector('[data-obs-note]');
+    if (!ta.value.trim()) return;
+    profiles.addObs(who(), { note: ta.value.trim(), q: lastQuest(who()) });
+    ta.value = ''; msg('Note saved.');
+  };
+  card.querySelector('[data-report]').onclick = () => {
+    const out = card.querySelector('[data-report-out]');
+    out.value = buildReport(ctx.version); out.hidden = false;
+    card.querySelector('[data-report-btns]').hidden = false;
+  };
+  card.querySelector('[data-copy]').onclick = async () => {
+    const out = card.querySelector('[data-report-out]');
+    out.select();
+    try { await navigator.clipboard.writeText(out.value); msg('Copied. Paste it into a message or email.'); }
+    catch (e) { try { document.execCommand('copy'); msg('Copied.'); } catch (e2) { msg('Select the text and copy it.'); } }
+  };
+  card.querySelector('[data-obs-clear]').onclick = () => { if (confirm('Clear the observations for this child?')) { profiles.clearTesting(who()); msg('Cleared.'); } };
   const box = card.querySelector('[data-profiles]');
   const draw = () => renderProfiles(box, draw);
   draw();

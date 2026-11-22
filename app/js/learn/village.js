@@ -38,6 +38,21 @@ export function activityIcon(g, template, x, y, k = 1) {
       s('path', ink({ d: `M${x} ${y} L${x} ${y - sc(26)} A${sc(26)} ${sc(26)} 0 0 1 ${x + sc(26)} ${y} Z`, fill: C.terra }, 3), g);
       t(`M${x - sc(26)} ${y} h${sc(52)} M${x} ${y - sc(26)} v${sc(52)}`);
       break;
+    // Reading
+    case 'letterSound': case 'firstSound': {
+      const letter = (lx, ly, ch) => { s('rect', ink({ x: lx - sc(18), y: ly - sc(22), width: sc(36), height: sc(44), rx: sc(8), fill: '#d6e6e3' }, 2.5), g); s('text', { x: lx, y: ly + sc(1), 'text-anchor': 'middle', 'dominant-baseline': 'central', 'font-size': sc(32), 'font-weight': 800, fill: C.teal, 'font-family': 'ui-rounded, sans-serif', text: ch }, g); };
+      if (template === 'letterSound') { s('path', ink({ d: `M${x - sc(34)} ${y + sc(12)} q${-sc(10)} ${-sc(36)} ${sc(10)} ${-sc(36)} q${sc(18)} 0 ${sc(14)} ${sc(20)} q${-sc(4)} ${sc(10)} ${-sc(12)} ${sc(18)}`, fill: '#f0c9a8' }, 2.5), g); letter(x + sc(20), y, 's'); }
+      else { s('circle', ink({ cx: x - sc(20), cy: y, r: sc(16), fill: C.ochre }, 2.5), g); letter(x + sc(22), y, 's'); }
+      break;
+    }
+    case 'rhyme':
+      s('circle', ink({ cx: x - sc(24), cy: y, r: sc(15), fill: C.ochre }, 2.5), g); s('circle', ink({ cx: x + sc(24), cy: y, r: sc(15), fill: C.ochre }, 2.5), g);
+      t(`M${x - sc(8)} ${y - sc(18)} q${sc(8)} ${-sc(12)} ${sc(16)} 0`, { stroke: C.teal });
+      break;
+    case 'blend': case 'spell':
+      for (let i = 0; i < 3; i++) s('rect', ink({ x: x - sc(42) + sc(i * 29), y: y - sc(18), width: sc(25), height: sc(32), rx: sc(5), fill: i === 1 ? '#f2dcd2' : '#d6e6e3' }, 2.5), g);
+      if (template === 'blend') t(`M${x - sc(36)} ${y + sc(26)} h${sc(66)} l${-sc(10)} ${-sc(6)} m${sc(10)} ${sc(6)} l${-sc(10)} ${sc(6)}`, { stroke: C.terra });
+      break;
     default: s('circle', ink({ cx: x, cy: y, r: sc(20), fill: C.ochre }, 3), g);
   }
 }

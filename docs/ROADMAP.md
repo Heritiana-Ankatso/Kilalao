@@ -45,7 +45,8 @@ Each template yields effectively unlimited items. Each skill is designed for abo
 |---|---|---|
 | **1. Foundation** | Learn area, child profiles, mastery engine (BKT), adaptive scheduler with placement by age and spaced review, three-language narration with recorded-audio packs, adult progress report, **Math track for ages 3–10 (39 skills, 11 templates)**, taught as *watch → together → your turn* lessons with a demonstrating guide | **This release** |
 | 1b. Game layer | Quest village (choose a friend to help; friends move in), hint ladder, in-lesson flow adaptation, process feedback; see [PEDAGOGY.md](PEDAGOGY.md) | **Done** |
-| 2. Reading A | Letter sounds, phonemic awareness, blending, sight words, the first decodable readers (en, fr) | Next |
+| 2. Reading A | Letter sounds, phonemic awareness, blending, building words: 14 English skills (phonics), 8 French skills (syllabic). **Still to do:** sight words, decodable readers, Malagasy (needs recordings) | **Done (first part)** |
+| — Child testing | Facilitator guide, in-app observations and anonymous report | **Done**; sessions with families are next |
 | 3. Math B | Ages 8–12: multi-digit operations, fractions to decimals, measurement, geometry, data | |
 | 4. Logic & coding | Patterns, sorting, sequencing, a block-coding playground, simple physics labs (the Brilliant-style track) | |
 | 5. Reading B | Fluency, comprehension and writing; leveled story library | |

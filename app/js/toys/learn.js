@@ -97,6 +97,9 @@ export default function learn(root, kit) {
   // ---------- A quest (one lesson) ----------
   async function start(profile, quest) {
     const lesson = mastery.planLesson(quest.skills, profile.id, profile, quest.skill, !quest.forced);
+    // Quest events for the testing report: start, then end or stuck (no end = left early).
+    const qid = Date.now();
+    profiles.logAttempt(profile.id, { t: qid, ev: 'start', q: quest.skill.id, qid, review: !!quest.review });
     let lastMode = null, missRun = 0, stuckRun = 0, easier = false;
     for (let i = 0; i < lesson.steps.length && alive; i++) {
       const st = lesson.steps[i];
@@ -110,9 +113,10 @@ export default function learn(root, kit) {
       else { missRun++; easier = true; stuckRun = res.hint >= 3 ? stuckRun + 1 : 0; }
       // Stuck at the top of the hint ladder twice: stop gently; the path will
       // offer an easier skill next. No endless repetition.
-      if (stuckRun >= 2) break;
+      if (stuckRun >= 2) { profiles.logAttempt(profile.id, { t: Date.now(), ev: 'stuck', q: quest.skill.id, qid }); break; }
     }
     if (!alive) return;
+    profiles.logAttempt(profile.id, { t: Date.now(), ev: 'end', q: quest.skill.id, qid, items: lesson.steps.length });
     if (quest.forced) { ending(profile); return; }
     const v = profile.village || { helped: [] };
     v.helped = [...(v.helped || []), { kind: quest.friend, skill: quest.skill.id, t: Date.now() }];
@@ -126,6 +130,7 @@ export default function learn(root, kit) {
       const lang = profile.lang;
       const item = TEMPLATES[skill.template].make(Math.random, easier ? easierParams(skill.params) : skill.params);
       let hintLevel = 0;
+      const t0 = performance.now();
       const resolve = () => done({ firstOk: first && hintLevel === 0, hint: hintLevel });
       progressDots(index, steps);
       stageMarker(mode, profile);
@@ -216,7 +221,7 @@ export default function learn(root, kit) {
           if (ok) {
             solved = true;
             if (mode === 'own' && first) mastery.update(profile.id, skill, profile, true, item.guess);
-            if (mode !== 'watch') profiles.logAttempt(profile.id, { t: Date.now(), s: skill.id, hint: hintLevel, m: mode });
+            if (mode !== 'watch') profiles.logAttempt(profile.id, { t: Date.now(), s: skill.id, hint: hintLevel, m: mode, ms: Math.round(performance.now() - t0) });
             if (c.bg) c.bg.style.fill = '#dfe9d5';
             replay(c.inner, 'hop');
             owl.rest(); owl.nod();

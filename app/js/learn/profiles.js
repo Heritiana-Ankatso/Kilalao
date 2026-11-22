@@ -2,7 +2,7 @@
 const KEY = 'kilalao.learn.v1';
 export const AVATARS = ['fox', 'owl', 'turtle', 'cat', 'frog', 'bear', 'whale', 'bee'];
 
-function blank() { return { active: null, profiles: [], mastery: {}, log: {} }; }
+function blank() { return { active: null, profiles: [], mastery: {}, log: {}, obs: {} }; }
 let data = blank();
 try { data = { ...blank(), ...JSON.parse(localStorage.getItem(KEY) || '{}') }; } catch (e) {}
 
@@ -41,6 +41,7 @@ export function remove(id) {
   data.profiles = data.profiles.filter((p) => p.id !== id);
   delete data.mastery[id];
   delete data.log[id];
+  if (data.obs) delete data.obs[id];
   if (data.active === id) data.active = data.profiles[0] ? data.profiles[0].id : null;
   save();
 }
@@ -58,6 +59,17 @@ export function logAttempt(pid, entry) {
   save();
 }
 export function log(pid) { return (data.log[pid] || []).slice(); }
+
+// Adult observations for child testing (tags and notes), kept on the device.
+export function addObs(pid, entry) {
+  data.obs ||= {};
+  const l = (data.obs[pid] ||= []);
+  l.push({ t: Date.now(), ...entry });
+  if (l.length > 500) l.splice(0, l.length - 500);
+  save();
+}
+export function obs(pid) { return ((data.obs || {})[pid] || []).slice(); }
+export function clearTesting(pid) { if (data.obs) delete data.obs[pid]; save(); }
 
 export function guessLang() {
   const l = (navigator.language || 'en').toLowerCase();

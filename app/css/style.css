@@ -220,6 +220,10 @@ button { font: inherit; color: inherit; }
 .adult .profile { border: 1px solid rgba(74,63,53,.15); border-radius: 14px; padding: 4px 14px 10px; margin: 10px 0; background: #fbf5e8; }
 .adult input[type=text] { font: inherit; padding: 6px 10px; border-radius: 10px; border: 1px solid rgba(74,63,53,.3); background: #fffaf0; width: 50%; }
 .adult details { margin: 6px 0; }
+.adult .tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+.adult .btn.tag { padding: 8px 12px; font-size: .92rem; background: #efe4cf; }
+.adult .btn.tag:active { background: var(--sage); color: #fff; }
+.adult textarea { width: 100%; font: inherit; font-size: .9rem; padding: 8px 10px; border-radius: 10px; border: 1px solid rgba(74,63,53,.3); background: #fffaf0; }
 .adult table.skills { width: 100%; border-collapse: collapse; font-size: .88rem; margin-top: 6px; }
 .adult table.skills td, .adult table.skills th { text-align: left; padding: 3px 6px; border-bottom: 1px solid rgba(74,63,53,.1); }
 
