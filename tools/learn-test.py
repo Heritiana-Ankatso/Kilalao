@@ -40,15 +40,20 @@ with sync_playwright() as p:
             page.wait_for_timeout(2000 if 'quick' in sk or 'subitize' in sk else 700)
             if i == 0:
                 # A wrong answer first: any tappable card that is not the correct one.
-                page.evaluate("""() => { const c = [...document.querySelectorAll('.toyroot g.tap')].filter(g => !g.dataset.ok && g.querySelector('rect,circle') && g.getBoundingClientRect().top > 120);
-                  const w = c[c.length - 1]; if (w) w.dispatchEvent(new PointerEvent('pointerdown', {bubbles: true})); }""")
+                page.evaluate("""() => {
+                  const fire = (g) => g && g.dispatchEvent(new PointerEvent('pointerdown', {bubbles: true}));
+                  const t = document.querySelector('.toyroot g[data-target]');
+                  if (t) { fire(document.querySelector('.toyroot g[data-bin=ones]')); fire(t); return; } // build one cube, check
+                  const c = [...document.querySelectorAll('.toyroot g.tap')].filter(g => !g.dataset.ok && !g.dataset.bin && g.querySelector('rect,circle') && g.getBoundingClientRect().top > 120);
+                  fire(c[c.length - 1]); }""")
                 page.wait_for_timeout(9000)
             if not shot:
                 page.screenshot(path=str(OUT / f'{sk}.png')); shot = True
             # Place-value needs building before checking: build the number.
             page.evaluate("""() => { const t = document.querySelector('.toyroot g[data-target]');
-              if (t) { const n = Number(t.dataset.target), tap = (k) => document.querySelector(`.toyroot g[data-bin=${k}]`).dispatchEvent(new PointerEvent('pointerdown', {bubbles: true}));
-                const built = document.querySelectorAll('.toyroot g.tap g.fb rect').length;
+              if (t) { let g; // clear the tray first
+                while ((g = [...document.querySelectorAll('.toyroot g.tap')].find(x => !x.dataset.bin && !x.dataset.target && x.querySelector('g.fb rect') && x.getBoundingClientRect().left > 300 && x.getBoundingClientRect().right < 980 && x.getBoundingClientRect().top > 250 && x.getBoundingClientRect().top < 620))) g.dispatchEvent(new PointerEvent('pointerdown', {bubbles: true}));
+                const n = Number(t.dataset.target), tap = (k) => document.querySelector(`.toyroot g[data-bin=${k}]`).dispatchEvent(new PointerEvent('pointerdown', {bubbles: true}));
                 for (let i = 0; i < Math.floor(n / 10); i++) tap('tens'); for (let i = 0; i < n % 10; i++) tap('ones'); } }""")
             page.evaluate("""() => { const ok = document.querySelector('.toyroot g[data-ok]'); if (ok) ok.dispatchEvent(new PointerEvent('pointerdown', {bubbles: true})); }""")
             page.wait_for_timeout(1400)
