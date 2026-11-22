@@ -94,3 +94,20 @@ export function summary(skills, pid, profile) {
   });
   return { mastered, assumed, practising, notStarted, rows, next: frontier(skills, pid, profile).slice(0, 3) };
 }
+
+// Plan a lesson in three stages (gradual release): the guide shows one example
+// ("watch"), the child does two with support ("together"), then practises
+// alone ("own"). A skill already in practice skips the demonstration. Only
+// "own" answers are recorded. One or two spaced-review items close the lesson.
+export function planLesson(skills, pid, profile, forced) {
+  const f = frontier(skills, pid, profile);
+  const d = due(skills, pid, profile);
+  const skill = forced || f[0] || d[0] || skills[skills.length - 1];
+  const r = record(pid, skill, profile);
+  const fresh = (r.n || 0) < 3 && !isMastered(r);
+  const steps = fresh
+    ? [['watch', skill], ['together', skill], ['together', skill], ['own', skill], ['own', skill], ['own', skill], ['own', skill]]
+    : [['together', skill], ['own', skill], ['own', skill], ['own', skill], ['own', skill]];
+  if (!forced) d.filter((x) => x !== skill).slice(0, 2).forEach((x) => steps.push(['own', x]));
+  return { skill, steps: steps.map(([mode, s]) => ({ mode, skill: s })) };
+}

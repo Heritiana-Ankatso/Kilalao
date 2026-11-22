@@ -74,8 +74,16 @@ toys/learn.js ── profiles.js   children on this device (localStorage kilalao
 
 - **Mastery** follows Bayesian Knowledge Tracing: slip 0.1, learning rate 0.12, and guess equal to the item's chance level (e.g. 1/3 for three choices). A skill is secure at P ≥ 0.95 after at least 3 attempts. Only the **first** answer to each item is recorded; later tries are for learning.
 - **Placement:** skills a year or more below the child's age start as *assumed* (P = 0.96). They are not taught, but the scheduler probes them through review, hardest first. A miss drops them back onto the teaching frontier.
-- **Scheduling:** the *frontier* is the set of unsecured skills whose prerequisites are secure. A six-item session mostly practises the first frontier skill, sometimes mixes in the next one, and includes one or two spaced-review items. Review intervals double from 1 to 64 days with each successful review.
-- **Templates** generate items from a random source, so practice never repeats exactly. A template draws in the 1600 × 900 world. Its answers go through `ctx.choices(values, render, answer)` (answer cards) or `ctx.pick(ok, card)` (custom interactions such as building with blocks). It may return `help()`, which runs after a first wrong answer.
+- **Scheduling:** the *frontier* is the set of unsecured skills whose prerequisites are secure. `planLesson()` picks the first frontier skill and builds a lesson:
+  - A new skill gets `watch` ×1, `together` ×2 and `own` ×4. A skill already in practice gets `together` ×1 and `own` ×4.
+  - One or two spaced-review items (`own`) close the lesson. Review intervals double from 1 to 64 days with each successful review.
+  - Only `own` answers update mastery.
+- **Lesson stages in the runner (`toys/learn.js`):**
+  - `watch` shields input and runs the template's `solve()`, or by default `help()` then a press on the right answer. The hand performs every action by dispatching real pointer events.
+  - `together` lets a template scaffold the item itself (`guided: true`), or otherwise runs `help()` on the new item before the child answers.
+  - `own` waits for the child, and after a first wrong answer runs `help()` on the same item.
+- **The guide's hand** (`handPointer` in `draw.js`) moves with a CSS transition above the activity. `ctx.point(target)` moves it to a target; `ctx.press(target, action?)` moves, presses, then runs `action` or dispatches `pointerdown` on the target.
+- **Templates** generate items from a random source, so practice never repeats exactly. Each returns `help` (teaches the method on this example), optionally `solve` (the full worked example) and `guided`. A template draws in the 1600 × 900 world. Its answers go through `ctx.choices(values, render, answer)` (answer cards) or `ctx.pick(ok, card)` (custom interactions such as building with blocks). It may return `help()`, which runs after a first wrong answer.
 - **Voice:** `clipPlan()` splits each prompt into fixed phrases and value clips (`p/add.0`, `n/7`, `f/3-4`). If every clip exists in `app/audio/manifest.json`, the recordings play back to back. Otherwise the device voice is used when it supports the language (`audio.hasVoice`). Otherwise nothing is spoken.
 - **Privacy:** profiles and the attempt log (the last 1,500 answers) stay in `localStorage` and never leave the device.
 

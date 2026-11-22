@@ -23,17 +23,24 @@ Kilalao draws on Montessori and low-stimulation ideas about play:
 | Limits set by adults | A daily play-time limit lets the toys gently fall asleep instead of cutting play off abruptly. |
 | Inclusion | People in Town and House have a range of skin tones and hair. Some wear glasses or hearing aids, and some use a wheelchair or a prosthetic leg. |
 
-## Learn: the adaptive learning path (ages 3–12)
+## Learn: lessons on an adaptive path (ages 3–12)
 
-The first item on the shelf, **Learn**, is a curriculum that adapts to each child. It complements the free-play toys:
+The first item on the shelf, **Learn**, teaches. Each lesson works on one skill and follows the sequence teachers call *I do, we do, you do*:
+
+1. **Watch:** a guide owl solves one example while a hand shows every step. It touches each apple as it counts, drops objects into the basket, or points at the parts of a fraction. Children who cannot read, or whose device has no voice, can still see what to do.
+2. **Together:** the child does two examples with support. Objects pulse until each one has been touched and numbered. The fox's request dots fill as apples go into the basket. The running total shows while building with tens and ones. For the other activities, the guide works through the method on the new example first, then the child gives the answer.
+3. **Your turn:** independent practice. Only these answers update the progress record. After a first wrong answer, the guide's hand demonstrates the method on that same example, for instance counting together or adding apples until the basket matches.
+
+A short review of earlier skills closes the lesson. A skill the child already has in practice starts at *Together*. A small marker at the top shows the stage without words: the owl with an eye, the owl with the child's animal, or the child's animal alone.
 
 - **Profiles:** each child picks their own animal. Adults set the name, age and language in the adult corner.
-- **Adaptive path:** every answer updates a per-skill mastery estimate (Bayesian Knowledge Tracing). The next session targets the edge of what the child knows, mixes in spaced review, and starts near the child's age. Easier skills are checked rather than taught, and fall back into teaching if a child misses them.
-- **Calm feedback:** a right answer gets a soft chime. A first wrong answer gets a short demonstration (for example, counting the objects together), then the correct answer glows. Children never see scores, stars, streaks or rewards.
-- **Three languages:** English, French and Malagasy prompts and number words. Narration uses recorded voice packs when present (needed for Malagasy, see `app/audio/README.md`), otherwise the device voice. It stays silent rather than using a voice in the wrong language. From age 7, the question is also shown as text.
-- **Adult report:** in the adult corner, each child's skills are listed as secure, in practice or not started, with recent accuracy and the skills being worked on.
+- **Adaptive path:** every independent answer updates a per-skill mastery estimate (Bayesian Knowledge Tracing). The next lesson targets the edge of what the child knows, starts near the child's age, and mixes in spaced review. Easier skills are checked rather than taught, and come back into teaching if missed.
+- **Activities to do, not only to choose:** touch-to-count (one-to-one correspondence and "the last number tells how many"), counting out a requested amount into a basket, building numbers from tens rods and ones cubes, and matching, comparing, number lines, number bonds, equal groups, sharing and fractions.
+- **Calm feedback:** a soft chime for a right answer and a demonstration rather than a buzzer after a wrong one. Children never see scores, stars, streaks or rewards.
+- **Three languages:** English, French and Malagasy prompts and number words. Recorded voice packs are used when present (needed for Malagasy, see `app/audio/README.md`), otherwise the device voice, otherwise silence. From age 7 the question is also shown as text.
+- **Adult report:** each child's skills are listed as secure, in practice, assumed from age or not started, with recent accuracy and what they are working on.
 
-**Phase 1 (this release): Math, 37 skills from age 3 to about 10,** built from 10 interactive templates. The skills run from counting, subitising and number bonds through place value with tens-and-ones blocks, addition and subtraction, skip counting and equal groups, to fractions on a number line. Reading, logic and coding, and social-emotional learning follow. See [docs/ROADMAP.md](docs/ROADMAP.md) for the full plan, scale targets and constraints.
+**Phase 1: Math, 39 skills from age 3 to about 10,** built from 11 activity templates. Reading, logic and coding, and social-emotional learning follow. See [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## The 17 toys
 
@@ -208,7 +215,12 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the design rules every toy must follo
 Most curriculum work is data:
 
 1. To add a **skill**, add one line to `app/js/learn/curriculum/math.js` with an id, typical age, prerequisites, template, parameters and an adult-facing description.
-2. To add a **template** (a new interactive mechanic), add an entry to `TEMPLATES` in `app/js/learn/templates/<subject>.js`. Its `make(rng, params)` returns `{ key, vars, guess, build(ctx) }`. `build` draws the item and answers through `ctx.choices()` or `ctx.pick()`, and may return `{ help }` for the demonstration after a wrong answer.
+2. To add a **template** (a new interactive mechanic), add an entry to `TEMPLATES` in `app/js/learn/templates/<subject>.js`. Its `make(rng, params)` returns `{ key, vars, guess, build(ctx) }`. `build` draws the item and answers through `ctx.choices()` or `ctx.pick()`. It returns `{ help, solve, guided }`:
+   - `help()` teaches the method on the current example using `ctx.point()` and `ctx.press()`.
+   - `solve()` is the full worked example for *Watch*.
+   - `guided: true` means the template scaffolds *Together* itself (check `ctx.mode`).
+
+   Every template needs a real demonstration: a child must be able to learn the skill from *Watch* and *help* alone, without sound.
 3. New prompts go into all three languages in `app/js/learn/i18n.js`.
 4. Run `python3 tools/learn-test.py <skill-id>` and look at `build/learn/`. To try a skill by hand, open `http://localhost:4210/?skill=math.<id>` and tap Learn.
 

@@ -12,10 +12,12 @@ export const MATH = [
   // Early Years (3-5)
   S('count3', 3, [], 'count', { min: 1, max: 3 }, 'Count up to 3 objects'),
   S('count5', 3.5, ['count3'], 'count', { min: 1, max: 5 }, 'Count up to 5 objects'),
+  S('give5', 3.5, ['count5'], 'give', { min: 1, max: 5 }, 'Count out a given number of objects (up to 5)'),
   S('more5', 3.5, ['count3'], 'compare', { max: 5 }, 'Tell which group has more (up to 5)'),
   S('subitize5', 4, ['count5'], 'count', { min: 1, max: 5, flash: true, frame: false }, 'Recognise small amounts at a glance (up to 5)'),
   S('numeral5', 4, ['count5'], 'numeral', { min: 1, max: 5 }, 'Match numerals 1–5 to amounts'),
   S('count10', 4, ['count5'], 'count', { min: 4, max: 10 }, 'Count up to 10 objects'),
+  S('give10', 4.5, ['give5', 'count10'], 'give', { min: 4, max: 10 }, 'Count out a given number of objects (up to 10)'),
   S('more10', 4.5, ['more5', 'count10'], 'compare', { max: 10 }, 'Tell which group has more (up to 10)'),
   S('numeral10', 4.5, ['numeral5', 'count10'], 'numeral', { min: 4, max: 10 }, 'Match numerals to amounts up to 10'),
   S('order10', 5, ['numeral10'], 'numberline', { min: 0, max: 10 }, 'Find the missing number in a sequence to 10'),

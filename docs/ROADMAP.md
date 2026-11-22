@@ -43,7 +43,7 @@ Each template yields effectively unlimited items. Each skill is designed for abo
 
 | Phase | Content | Status |
 |---|---|---|
-| **1. Foundation** | Learn area, child profiles, mastery engine (BKT), adaptive scheduler with placement by age and spaced review, three-language narration with recorded-audio packs, adult progress report, **Math track for ages 3–10 (37 skills, 10 templates)** | **This release** |
+| **1. Foundation** | Learn area, child profiles, mastery engine (BKT), adaptive scheduler with placement by age and spaced review, three-language narration with recorded-audio packs, adult progress report, **Math track for ages 3–10 (39 skills, 11 templates)**, taught as *watch → together → your turn* lessons with a demonstrating guide | **This release** |
 | 2. Reading A | Letter sounds, phonemic awareness, blending, sight words, the first decodable readers (en, fr) | Next |
 | 3. Math B | Ages 8–12: multi-digit operations, fractions to decimals, measurement, geometry, data | |
 | 4. Logic & coding | Patterns, sorting, sequencing, a block-coding playground, simple physics labs (the Brilliant-style track) | |

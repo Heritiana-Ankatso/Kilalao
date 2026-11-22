@@ -1,6 +1,6 @@
 // Kilalao service worker: cache-first, so the whole playroom works offline.
 // Bump VERSION whenever any file under app/ changes; old caches are deleted.
-const VERSION = 'kilalao-v1.1.0';
+const VERSION = 'kilalao-v1.2.0';
 const FILES = [
   './',
   'index.html',

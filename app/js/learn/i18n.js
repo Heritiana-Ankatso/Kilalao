@@ -28,6 +28,12 @@ export const PROMPTS = {
     fraction: 'Which one shows {f}?',
     fracLine: 'Where is {f} on the line?',
     together: "Let's count together.",
+    give: 'Put {n} in the basket.',
+    touchCount: 'Touch each one and count.',
+    lastNumber: 'The last number tells how many.',
+    watch: 'Watch me first.',
+    tryTogether: "Now let's do it together.",
+    yourTurn: 'Your turn!',
   },
   fr: {
     howMany: 'Combien ?',
@@ -46,6 +52,12 @@ export const PROMPTS = {
     fraction: 'Quelle image montre {f} ?',
     fracLine: 'Où est {f} sur la ligne ?',
     together: 'Comptons ensemble.',
+    give: 'Mets {n} dans le panier.',
+    touchCount: 'Touche chacun et compte.',
+    lastNumber: 'Le dernier nombre dit combien il y en a.',
+    watch: "Regarde d'abord.",
+    tryTogether: 'Maintenant, faisons-le ensemble.',
+    yourTurn: 'À toi !',
   },
   mg: {
     howMany: 'Firy?',
@@ -64,6 +76,12 @@ export const PROMPTS = {
     fraction: 'Iza no mampiseho {f}?',
     fracLine: 'Aiza ny {f} amin\'ny tsipika?',
     together: 'Andao isaina miaraka.',
+    give: 'Ataovy ao anaty harona ny {n}.',
+    touchCount: 'Tsindrio tsirairay ary isao.',
+    lastNumber: 'Ny isa farany no milaza ny isany.',
+    watch: 'Jereo aloha.',
+    tryTogether: 'Andao hiara-hanao izao.',
+    yourTurn: 'Anjaranao!',
   },
 };
 

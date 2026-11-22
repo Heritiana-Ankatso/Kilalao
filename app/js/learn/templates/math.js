@@ -4,7 +4,7 @@
 // ctx.pick(ok). It may return { help } — an async demonstration shown after a
 // first wrong answer (for example, counting the objects together).
 import { s, C, replay } from '../../lib.js';
-import { ink, obj, scatter, frames, drawFrames, blocks, numeral, fractionGlyph, card, near, shuffle, randInt, KIND_NAMES, INK, STAGE, CHOICE_Y } from '../draw.js';
+import { ink, obj, moveObj, scatter, frames, drawFrames, blocks, numeral, fractionGlyph, card, near, shuffle, randInt, KIND_NAMES, INK, STAGE, CHOICE_Y } from '../draw.js';
 
 const pickKind = (rng) => KIND_NAMES[Math.floor(rng() * KIND_NAMES.length)];
 const COLORS = [C.terra, C.teal, C.ochre, C.plum, C.blue, C.sage];
@@ -27,14 +27,24 @@ function group(ctx, n, kind, box, opts = {}) {
   return out;
 }
 
-// Count objects aloud, one by one.
+// Count objects aloud, one by one, with the guide's hand pointing at each.
 async function countTogether(ctx, objs, from = 1) {
   for (let i = 0; i < objs.length; i++) {
+    await ctx.point(objs[i]);
     replay(objs[i].inner, 'hop');
     ctx.sayNumber(from + i);
     ctx.tick();
-    await ctx.wait(ctx.calm ? 900 : 700);
+    await ctx.wait(ctx.calm ? 650 : 420);
   }
+}
+
+// A small numbered badge next to a counted object.
+function badge(ctx, o, k) {
+  const sc = o.scale || 1;
+  const b = s('g', { class: 'fb popin', 'pointer-events': 'none' }, ctx.layer);
+  s('circle', ink({ cx: o.x + 30 * sc, cy: o.y - 36 * sc, r: 25, fill: C.white }, 3), b);
+  numeral(b, k, o.x + 30 * sc, o.y - 36 * sc + 2, 32, C.teal);
+  return b;
 }
 
 const digits = (size) => (g, v, c) => { numeral(g, v, c.x, c.y, size); };
@@ -54,6 +64,17 @@ export const TEMPLATES = {
           const kind = pickKind(rng);
           const box = { x: 380, y: STAGE.top + 50, w: 840, h: STAGE.bottom - STAGE.top - 100 };
           const objs = group(ctx, n, kind, box, { frame: P.frame });
+          // Touch each object to count it: it gets the next number (one-to-one counting).
+          let counted = 0, last = null;
+          const countObj = (o) => {
+            if (o.counted) return;
+            o.counted = ++counted;
+            o.inner.classList.remove('invite');
+            if (last) last.classList.remove('invite');
+            last = badge(ctx, o, counted);
+            replay(o.inner, 'hop'); ctx.sayNumber(counted); ctx.tick();
+            if (counted === n) { last.classList.add('invite'); if (ctx.onAllCounted) ctx.onAllCounted(); }
+          };
           let cloth = null;
           if (P.flash) {
             ctx.later(1600, () => {
@@ -61,10 +82,107 @@ export const TEMPLATES = {
               s('rect', ink({ x: box.x - 40, y: box.y - 40, width: box.w + 80, height: box.h + 80, rx: 40, fill: C.sand }, 4), cloth);
               for (let i = 0; i < 6; i++) s('path', { d: `M${box.x + 40 + i * 140} ${box.y - 30} q20 ${box.h / 2} 0 ${box.h + 60}`, stroke: C.woodL, 'stroke-width': 6, fill: 'none', opacity: 0.6 }, cloth);
             });
+          } else {
+            objs.forEach((o) => { o.classList.add('tap'); o.addEventListener('pointerdown', (e) => { e.preventDefault(); countObj(o); }); });
           }
           const vals = shuffle(rng, [n, ...near(rng, n, 2, Math.max(0, (P.min || 1) - 1), P.max + 2)]);
-          ctx.choices(vals, P.max <= 5 ? dotsUnder : digits(120), n);
-          return { help: async () => { if (cloth) cloth.remove(); ctx.say('together'); await ctx.wait(1200); await countTogether(ctx, objs); } };
+          const cards = ctx.choices(vals, P.max <= 5 ? dotsUnder : digits(120), n);
+          const countAll = async () => { for (const o of objs) if (!o.counted) await ctx.press(o, () => countObj(o)); };
+          if (ctx.mode === 'together' && !P.flash) {
+            // Guided: the choices wait until every object has been touched and counted.
+            ctx.dimChoices(true);
+            objs.forEach((o) => o.inner.classList.add('invite'));
+            ctx.onAllCounted = async () => { await ctx.wait(900); ctx.dimChoices(false); ctx.say('lastNumber'); };
+          }
+          return {
+            guided: !P.flash,
+            help: async () => { if (cloth) { cloth.remove(); cloth = null; } ctx.say('together'); await ctx.wait(1100); await countAll(); await ctx.wait(500); ctx.say('lastNumber'); await ctx.wait(1400); },
+            solve: async () => {
+              if (P.flash) { await ctx.wait(2400); if (cloth) { cloth.remove(); cloth = null; } }
+              ctx.say('touchCount'); await ctx.wait(1300);
+              await countAll(); await ctx.wait(700);
+              ctx.say('lastNumber'); await ctx.wait(1500);
+              await ctx.press(cards[n]);
+            },
+          };
+        },
+      };
+    },
+  },
+
+  // ---------------------------------------------------------------------
+  // Put exactly n objects in the basket (producing a quantity, not choosing one).
+  give: {
+    make(rng, P) {
+      const n = randInt(rng, P.min || 1, P.max);
+      return {
+        key: 'give', vars: { n }, guess: 0.1,
+        build(ctx) {
+          const kind = pickKind(rng);
+          const total = Math.min(n + 3, 14);
+          // The friend asking, with a speech bubble that shows the number and that many dots.
+          const fox = s('g', null, ctx.layer);
+          fox.inner = s('g', { class: 'fbb' }, fox);
+          drawFriend(fox.inner, 1330, 520);
+          const bub = s('g', null, ctx.layer);
+          s('path', ink({ d: 'M1170 170 h320 a30 30 0 0 1 30 30 v150 a30 30 0 0 1 -30 30 h-120 l-30 40 l-10 -40 h-160 a30 30 0 0 1 -30 -30 v-150 a30 30 0 0 1 30 -30 z', fill: C.white }, 4), bub);
+          numeral(bub, n, 1250, 275, 110, C.terra);
+          const dots = [];
+          const showDots = n <= 10;
+          for (let i = 0; showDots && i < n; i++) {
+            const dx = 1360 + (i % 5) * 30, dy = 245 + Math.floor(i / 5) * 32;
+            dots.push(s('circle', ink({ cx: dx, cy: dy, r: 11, fill: C.white }, 2.5), bub));
+          }
+          // Table of objects and the basket.
+          s('rect', ink({ x: 250, y: 600, width: 700, height: 26, rx: 10, fill: C.woodL }, 4), ctx.layer);
+          const basket = s('g', null, ctx.layer);
+          s('path', ink({ d: 'M930 560 h300 l-30 150 h-240 z', fill: C.wood }, 4), basket);
+          for (let i = 0; i < 4; i++) s('line', { x1: 950 + i * 20, y1: 600 + i * 25, x2: 1210 - i * 20, y2: 600 + i * 25, stroke: C.woodD, 'stroke-width': 3, opacity: 0.6 }, basket);
+          const count = numeral(ctx.layer, '', 1080, 500, 80, C.teal);
+          const home = scatter(rng, total, { x: 300, y: 290, w: 600, h: 260 }, 92);
+          const items = home.map((p) => { const o = obj(ctx.layer, kind, p.x, p.y, 1.05); o.home = p; o.inBasket = false; return o; });
+          const inBasket = [];
+          const slot = (i) => ({ x: 990 + (i % 4) * 62, y: 610 - Math.floor(i / 4) * 34 });
+          const refresh = () => {
+            count.textContent = inBasket.length ? String(inBasket.length) : '';
+            dots.forEach((d, i) => d.setAttribute('fill', ctx.mode !== 'own' && i < inBasket.length ? C.terra : C.white));
+          };
+          const toggle = (o) => {
+            if (!o.inBasket) { if (inBasket.length >= 12) return; o.inBasket = true; inBasket.push(o); const sp = slot(inBasket.length - 1); moveObj(o, sp.x, sp.y); ctx.sayNumber(inBasket.length); }
+            else { o.inBasket = false; inBasket.splice(inBasket.indexOf(o), 1); moveObj(o, o.home.x, o.home.y); inBasket.forEach((q, i) => { const sp = slot(i); moveObj(q, sp.x, sp.y); }); ctx.sayNumber(inBasket.length); }
+            o.style.transition = 'transform .35s ease';
+            o.dataset.inb = o.inBasket ? '1' : '';
+            replay(o.inner, 'hop'); ctx.tick(); refresh();
+          };
+          items.forEach((o) => { o.style.transition = 'transform .35s ease'; o.classList.add('tap'); o.addEventListener('pointerdown', (e) => { e.preventDefault(); toggle(o); }); });
+          // "Give" button: a basket with an arrow to the friend.
+          const give = card(ctx.layer, 1080, CHOICE_Y + 10, 220, 140, C.sage);
+          s('path', ink({ d: 'M1030 790 h60 M1070 770 l24 20 l-24 20', fill: 'none', stroke: C.white }, 10), give.inner);
+          give.g.addEventListener('pointerdown', (e) => {
+            e.preventDefault();
+            const ok = inBasket.length === n;
+            if (ok) { replay(fox.inner, 'hop'); inBasket.forEach((o) => { o.style.transition = 'transform .6s ease, opacity .6s'; moveObj(o, 1330, 470); o.style.opacity = 0; }); }
+            else replay(fox.inner, 'wiggle');
+            ctx.pick(ok, give);
+          });
+          ctx.correct(give);
+          give.g.dataset.give = String(n);
+          items.forEach((o) => { o.dataset.item = '1'; });
+          refresh();
+          const fix = async () => {
+            while (inBasket.length > n) { const o = inBasket[inBasket.length - 1]; await ctx.press(o, () => toggle(o)); }
+            for (const o of items) { if (inBasket.length >= n) break; if (!o.inBasket) await ctx.press(o, () => toggle(o)); }
+          };
+          if (ctx.mode === 'together') items.forEach((o) => o.inner.classList.add('invite'));
+          return {
+            guided: true, // the dots in the bubble fill as the child adds objects
+            help: async () => {
+              // Count what is in the basket, then add or take away until it matches.
+              ctx.say('give', { n }); await ctx.wait(1500);
+              await fix(); await ctx.wait(600);
+            },
+            solve: async () => { await ctx.wait(1500); await fix(); await ctx.wait(700); await ctx.press(give); },
+          };
         },
       };
     },
@@ -87,7 +205,7 @@ export const TEMPLATES = {
               return c;
             });
             ctx.correct(cards[a > b ? 0 : 1]);
-            return { help: async () => { [a, b].forEach((v, i) => blocks(ctx.layer, v, 420 + i * 560, 600 - 220, 18)); await ctx.wait(1500); } };
+            return { help: async () => { [a, b].forEach((v, i) => blocks(ctx.layer, v, 420 + i * 560, 380, 18)); await ctx.wait(1200); await ctx.point(cards[0]); ctx.sayNumber(a); await ctx.wait(1000); await ctx.point(cards[1]); ctx.sayNumber(b); await ctx.wait(1000); } };
           },
         };
       }
@@ -129,6 +247,7 @@ export const TEMPLATES = {
             groups[v] = [];
             for (let i = 0; i < v; i++) {
               const o = s('g', { transform: `translate(${fr.cells[i].x} ${fr.cells[i].y})` }, g);
+              o.x = fr.cells[i].x; o.y = fr.cells[i].y;
               o.inner = s('g', { class: 'fb' }, o);
               s('circle', ink({ r: v > 10 ? 8 : 12, fill: C.terra }, 2.5), o.inner);
               groups[v].push(o);
@@ -165,7 +284,8 @@ export const TEMPLATES = {
           });
           const vals = shuffle(rng, [ans, ...near(rng, ans, 2, 0, P.max + step * 2, [step, -step, 1, -1, 2 * step, 10])]);
           ctx.choices(vals, digits(110), ans);
-          return { help: async () => { for (let i = 0; i < len; i++) { replay(stones[i].inner, 'hop'); ctx.sayNumber(seq[i]); ctx.tick(); await ctx.wait(800); } } };
+          stones.forEach((g, i) => { g.x = 340 + i * 230; g.y = 400; });
+          return { help: async () => { for (let i = 0; i < len; i++) { await ctx.point(stones[i]); replay(stones[i].inner, 'hop'); ctx.sayNumber(seq[i]); ctx.tick(); await ctx.wait(500); } } };
         },
       };
     },
@@ -240,10 +360,11 @@ export const TEMPLATES = {
           return {
             help: async () => {
               for (let i = k; i < to; i++) {
+                await ctx.point(fr.cells[i]);
                 const o = obj(ctx.layer, 'ball', fr.cells[i].x, fr.cells[i].y, 1, C.teal);
                 replay(o.inner, 'popin');
                 ctx.sayNumber(i - k + 1); ctx.tick();
-                await ctx.wait(750);
+                await ctx.wait(450);
               }
             },
           };
@@ -266,7 +387,7 @@ export const TEMPLATES = {
           tray.g.classList.remove('tap');
           const trayG = s('g', null, ctx.layer);
           const live = numeral(ctx.layer, '', 800, 670, 60, C.stone);
-          let showLive = false;
+          let showLive = ctx.mode !== 'own';
           function redraw() {
             trayG.innerHTML = '';
             const pieces = blocks(trayG, tens * 10 + ones, 520, 330, 24);
@@ -290,7 +411,17 @@ export const TEMPLATES = {
           ctx.correct(ok);
           binT.g.dataset.bin = 'tens'; binO.g.dataset.bin = 'ones'; ok.g.dataset.target = String(n);
           redraw();
-          return { help: async () => { showLive = true; redraw(); ctx.say('build', { n }); await ctx.wait(800); } };
+          const buildIt = async () => {
+            while (tens * 10 + ones > n && trayG.firstChild) { const pcs = trayG.querySelectorAll('g.tap'); await ctx.press(pcs[pcs.length - 1]); }
+            while (tens < Math.floor(n / 10)) await ctx.press(binT);
+            while (ones < n % 10) await ctx.press(binO);
+            while (tens > Math.floor(n / 10)) await ctx.press(trayG.querySelector('g.tap'));
+          };
+          return {
+            guided: true, // in "together" the running total is shown while building
+            help: async () => { showLive = true; redraw(); ctx.say('build', { n }); await ctx.wait(1200); await buildIt(); await ctx.wait(800); },
+            solve: async () => { showLive = true; redraw(); await ctx.wait(1200); await buildIt(); await ctx.wait(800); await ctx.press(ok); },
+          };
         },
       };
     },
@@ -314,6 +445,7 @@ export const TEMPLATES = {
             for (let i = 0; i < a; i++) {
               const cx = 800 + ((i % cols) - (cols - 1) / 2) * 250, cy = top + (rows > 1 ? 70 : 150) + Math.floor(i / cols) * 175;
               const ring = s('g', null, ctx.layer);
+              ring.x = cx; ring.y = cy;
               ring.inner = s('g', { class: 'fb' }, ring);
               s('ellipse', ink({ cx, cy, rx: 110, ry: 78, fill: C.cream }, 3.5), ring.inner);
               const pts = scatter(rng, b, { x: cx - 70, y: cy - 45, w: 140, h: 90 }, 44);
@@ -334,7 +466,7 @@ export const TEMPLATES = {
           return {
             help: async () => {
               if (!share) {
-                for (let i = 0; i < a; i++) { replay(rings[i].inner, 'hop'); ctx.sayNumber((i + 1) * b); ctx.tick(); await ctx.wait(850); }
+                for (let i = 0; i < a; i++) { await ctx.point(rings[i]); replay(rings[i].inner, 'hop'); ctx.sayNumber((i + 1) * b); ctx.tick(); await ctx.wait(850); }
               } else {
                 for (let i = 0; i < pile.length; i++) {
                   const p = plates[i % b];
@@ -373,12 +505,21 @@ export const TEMPLATES = {
           const shape = rng() < 0.5 ? 'pie' : 'bar';
           const cards = opts.map(([kk, dd], i) => {
             const c = card(ctx.layer, 360 + i * 440, 540, 380, 320, C.cream);
-            drawFraction(c.inner, shape, kk, dd, c.x, c.y);
+            c.parts = drawFraction(c.inner, shape, kk, dd, c.x, c.y);
             c.g.addEventListener('pointerdown', (e) => { e.preventDefault(); ctx.pick(kk === k && dd === d, c); });
             if (kk === k && dd === d) ctx.correct(c);
             return c;
           });
-          return { help: async () => { await ctx.wait(400); } };
+          // Help: count all the equal parts (the bottom number), then the coloured ones (the top number).
+          const right = cards.find((c) => c.g.dataset.ok);
+          return {
+            help: async () => {
+              for (let i = 0; i < d; i++) { await ctx.point(right.parts[i]); replay(right.parts[i].el, 'hop'); ctx.sayNumber(i + 1); await ctx.wait(350); }
+              await ctx.wait(500);
+              for (let i = 0; i < k; i++) { await ctx.point(right.parts[i]); replay(right.parts[i].el, 'hop'); ctx.sayNumber(i + 1); await ctx.wait(350); }
+              await ctx.wait(400);
+            },
+          };
         },
       };
     },
@@ -404,6 +545,7 @@ export const TEMPLATES = {
             s('line', ink({ x1: x, y1: y - 30, x2: x, y2: y + 30 }, 5), ctx.layer);
             if (i === 0 || i === d) continue;
             const g = s('g', { class: 'tap' }, ctx.layer);
+            g.x = x; g.y = y - 90;
             g.inner = s('g', { class: 'fb' }, g);
             s('circle', ink({ cx: x, cy: y - 90, r: 46, fill: C.white }, 4), g.inner);
             s('circle', { cx: x, cy: y, r: 40, fill: 'transparent' }, g);
@@ -411,23 +553,42 @@ export const TEMPLATES = {
             if (i === k) ctx.correct({ g, inner: g.inner, bg: g.inner.firstChild });
             ticks.push(g);
           }
-          return { help: async () => { for (let i = 0; i < k; i++) { replay(ticks[i].inner, 'hop'); ctx.tick(); await ctx.wait(600); } } };
+          return { help: async () => { for (let i = 0; i < k; i++) { await ctx.point(ticks[i]); replay(ticks[i].inner, 'hop'); ctx.sayNumber(i + 1); ctx.tick(); await ctx.wait(400); } } };
         },
       };
     },
   },
 };
 
+// Draws a shape cut into d equal parts with k coloured; returns each part's centre.
 function drawFraction(parent, shape, k, d, cx, cy) {
+  const parts = [];
   if (shape === 'pie') {
     const r = 110;
     for (let i = 0; i < d; i++) {
       const a0 = (i / d) * Math.PI * 2 - Math.PI / 2, a1 = ((i + 1) / d) * Math.PI * 2 - Math.PI / 2;
       const large = a1 - a0 > Math.PI ? 1 : 0;
-      s('path', ink({ d: `M${cx} ${cy} L${cx + Math.cos(a0) * r} ${cy + Math.sin(a0) * r} A${r} ${r} 0 ${large} 1 ${cx + Math.cos(a1) * r} ${cy + Math.sin(a1) * r} Z`, fill: i < k ? C.terra : C.white }, 4), parent);
+      const el = s('path', ink({ class: 'fb', d: `M${cx} ${cy} L${cx + Math.cos(a0) * r} ${cy + Math.sin(a0) * r} A${r} ${r} 0 ${large} 1 ${cx + Math.cos(a1) * r} ${cy + Math.sin(a1) * r} Z`, fill: i < k ? C.terra : C.white }, 4), parent);
+      const am = (a0 + a1) / 2;
+      parts.push({ el, x: cx + Math.cos(am) * r * 0.6, y: cy + Math.sin(am) * r * 0.6 });
     }
   } else {
     const w = 300, h = 110, x = cx - w / 2;
-    for (let i = 0; i < d; i++) s('rect', ink({ x: x + (w / d) * i, y: cy - h / 2, width: w / d, height: h, fill: i < k ? C.teal : C.white }, 4), parent);
+    for (let i = 0; i < d; i++) {
+      const el = s('rect', ink({ class: 'fb', x: x + (w / d) * i, y: cy - h / 2, width: w / d, height: h, fill: i < k ? C.teal : C.white }, 4), parent);
+      parts.push({ el, x: x + (w / d) * (i + 0.5), y: cy });
+    }
   }
+  return parts;
+}
+
+// The friend who asks for things in the "give" activity.
+function drawFriend(g, x, y) {
+  s('path', ink({ d: `M${x - 70} ${y - 40} L${x - 60} ${y - 120} L${x - 20} ${y - 80} Z M${x + 70} ${y - 40} L${x + 60} ${y - 120} L${x + 20} ${y - 80} Z`, fill: C.terra }, 4), g);
+  s('ellipse', ink({ cx: x, cy: y + 120, rx: 80, ry: 90, fill: C.terra }, 4), g);
+  s('ellipse', { cx: x, cy: y + 140, rx: 46, ry: 60, fill: C.cream }, g);
+  s('circle', ink({ cx: x, cy: y - 20, r: 82, fill: C.terra }, 4), g);
+  s('path', ink({ d: `M${x - 60} ${y + 10} Q${x} ${y + 60} ${x + 60} ${y + 10} Q${x} ${y + 40} ${x - 60} ${y + 10} Z`, fill: C.cream }, 3), g);
+  for (const sx of [-1, 1]) s('circle', { cx: x + sx * 30, cy: y - 30, r: 8, fill: INK }, g);
+  s('ellipse', { cx: x, cy: y + 8, rx: 10, ry: 7, fill: INK }, g);
 }

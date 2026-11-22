@@ -24,6 +24,7 @@ Contributions are welcome, including new toys, fixes, accessibility work and tra
 
 - Children never see scores, stars, streaks, timers or rewards. Progress belongs in the adult report.
 - Feedback stays calm: a soft chime for right answers, and a demonstration (not a buzzer) after a wrong one.
+- **Teach, don't only test.** Every template needs a `help()` that shows the method with the guide's hand, and a worked example for *Watch*. A child must be able to learn the skill without sound and without reading.
 - Every prompt must exist in English, French and Malagasy. Mark new French and Malagasy strings for native-speaker review in the pull request.
 - New skills need an adult-facing description, a typical age and prerequisites. Ask a teacher to review the sequence.
 

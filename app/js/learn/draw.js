@@ -58,8 +58,28 @@ export function obj(parent, kind, x, y, scale = 1, color) {
   const inner = s('g', { class: 'fb' }, o);
   KINDS[kind](inner, color);
   o.inner = inner;
+  o.x = x; o.y = y; o.scale = scale;
   return o;
 }
+
+// Move an object (keeps its scale) and remember where it is.
+export function moveObj(o, x, y) {
+  o.x = x; o.y = y;
+  o.setAttribute('transform', `translate(${x.toFixed(1)} ${y.toFixed(1)}) scale(${o.scale || 1})`);
+}
+
+// The guide's pointing hand. Its fingertip is at (0, 0). It moves with a CSS
+// transition, so the outer group carries no transform attribute.
+export function handPointer(parent) {
+  const g = s('g', { class: 'guide-hand', 'pointer-events': 'none' }, parent);
+  const inner = s('g', null, g);
+  s('path', ink({ d: 'M-4 -2 C-10 -10 -12 -24 -6 -28 C0 -32 6 -26 8 -16 L12 2 C16 -6 26 -6 28 4 C34 -2 44 2 44 12 C50 8 60 14 58 26 L56 56 C54 74 40 86 22 86 L6 86 C-8 86 -20 76 -26 62 L-40 30 C-44 22 -36 14 -28 20 L-14 34 L-14 -2 Z', fill: '#f6dcc2' }, 3.5), inner);
+  s('path', { d: 'M12 2 L14 26 M28 4 L30 28 M44 12 L44 30', stroke: INK, 'stroke-width': 2.5, opacity: 0.45, fill: 'none', 'stroke-linecap': 'round' }, inner);
+  g.inner = inner;
+  return g;
+}
+
+export const centerOf = (t) => (t && t.x !== undefined ? { x: t.x, y: t.y } : t && t.cx !== undefined ? { x: t.cx, y: t.cy } : { x: 800, y: 450 });
 
 export function pulse(o) { replay(o.inner || o, 'hop'); }
 
