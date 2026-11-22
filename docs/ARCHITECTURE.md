@@ -60,6 +60,16 @@ Because everything goes through the kit, leaving a toy always stops its sounds, 
 
 `sw.js` precaches an explicit list of every file under `app/` in a versioned cache (`kilalao-vX.Y.Z`). It serves requests cache-first and falls back to the network, adding any extra same-origin file to the cache. On `activate` it deletes older `kilalao-*` caches. **When any served file changes, bump `VERSION`.** Otherwise installed copies keep the old files.
 
+## Android wrapper
+
+`android/` is a Gradle project with a single class, `MainActivity.java`, and no library dependencies:
+
+- **Bundled web app:** the `syncWebApp` task copies `app/` (without `sw.js`) into the APK assets under `www/` on every build, so the website and the app never drift apart.
+- **Serving the files:** a full-screen `WebView` loads `https://appassets.androidplatform.net/www/index.html`. Every request to that reserved host is answered from the assets by `shouldInterceptRequest`, with correct MIME types (ES modules need `text/javascript`). Nothing reaches the network, and navigation to any other host is blocked.
+- **Speech bridge:** `window.KilalaoAndroid` exposes `say()` and `stop()`, which use Android `TextToSpeech`. `audio.say()` and `audio.hush()` prefer it when present, because the WebView has no working `speechSynthesis`.
+- **Shell differences:** `main.js` detects the bridge, skips service-worker registration (the files are already on the device) and reports offline play as ready. It also defines `window.kilalaoBack()`, which the Back button calls. It closes the adult panel or the open toy and returns `false` on the shelf.
+- **Lifecycle:** the app runs in immersive full screen with a landscape-only orientation. The WebView timers pause when the app goes to the background. The play-time counter already ignores hidden pages.
+
 ## Testing
 
 `tools/shoot.py` starts headless Chromium with Playwright, opens the shelf and each toy in turn, taps once in the middle, saves a screenshot to `build/shots/` and fails if any page error or console error occurs.

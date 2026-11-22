@@ -165,7 +165,15 @@ export const sfx = {
 };
 
 // Gentle speech for the phonics toy. Uses the device's offline voices if any.
+// Inside the Android app, the WebView has no working speechSynthesis, so the
+// app exposes the system text-to-speech engine as window.KilalaoAndroid.
+const nativeTTS = () => (typeof window !== 'undefined' && window.KilalaoAndroid && typeof window.KilalaoAndroid.say === 'function') ? window.KilalaoAndroid : null;
+
 export function say(text, { rate = 0.8, pitch = 1.1, lang = 'en' } = {}) {
+  const n = nativeTTS();
+  if (n) {
+    try { n.say(String(text), rate, pitch, muted ? 0 : Math.min(1, volume + 0.2), lang); return true; } catch (e) { return false; }
+  }
   if (!('speechSynthesis' in window)) return false;
   try {
     const u = new SpeechSynthesisUtterance(text);
@@ -176,4 +184,10 @@ export function say(text, { rate = 0.8, pitch = 1.1, lang = 'en' } = {}) {
     speechSynthesis.speak(u);
     return true;
   } catch (e) { return false; }
+}
+
+// Stop any speech in progress.
+export function hush() {
+  const n = nativeTTS();
+  try { if (n) n.stop(); else if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch (e) {}
 }

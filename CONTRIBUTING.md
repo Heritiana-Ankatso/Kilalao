@@ -38,7 +38,8 @@ Contributions are welcome, including new toys, fixes, accessibility work and tra
 2. Run `python3 tools/shoot.py`. Every toy must print `ok`. Look at the screenshots in `build/shots/`.
 3. If you added or renamed files under `app/`, update `FILES` in `app/sw.js` and bump `VERSION`.
 4. Check offline mode: load the app once, turn off the network and reload.
-5. Keep commits focused and describe what a child would see or hear differently.
+5. If you can, build the Android app (`cd android && ./gradlew assembleDebug`) and try it on a device. New file types under `app/` may need a MIME type in `MainActivity.java`.
+6. Keep commits focused and describe what a child would see or hear differently.
 
 ## Reporting issues
 

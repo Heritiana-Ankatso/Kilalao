@@ -1,0 +1,65 @@
+plugins {
+    id 'com.android.application'
+}
+
+// The web app in ../../app is the single source of truth. It is copied into
+// the APK's assets (under www/) on every build, so the Android app always
+// ships exactly the same toys as the website.
+def webDir = rootProject.file('../app')
+def webAssets = layout.buildDirectory.dir('generated/kilalao-assets')
+def syncWebApp = tasks.register('syncWebApp', Sync) {
+    from(webDir) { exclude 'sw.js' }
+    into(webAssets.map { it.dir('www') })
+}
+
+// Release signing is read from keystore.properties (never committed) or from
+// environment variables in CI. Without them, release builds are left unsigned.
+def ksProps = new Properties()
+def ksFile = rootProject.file('keystore.properties')
+if (ksFile.exists()) ksFile.withInputStream { ksProps.load(it) }
+def ks = { String k, String env -> ksProps.getProperty(k) ?: System.getenv(env) }
+
+android {
+    namespace 'io.github.heritianaankatso.kilalao'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'io.github.heritianaankatso.kilalao'
+        minSdk 24
+        targetSdk 35
+        versionCode 1
+        versionName '1.0.1'
+    }
+
+    signingConfigs {
+        release {
+            def path = ks('storeFile', 'KILALAO_KEYSTORE')
+            if (path) {
+                storeFile file(path)
+                storePassword ks('storePassword', 'KILALAO_KEYSTORE_PASSWORD')
+                keyAlias ks('keyAlias', 'KILALAO_KEY_ALIAS')
+                keyPassword ks('keyPassword', 'KILALAO_KEY_PASSWORD')
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            if (signingConfigs.release.storeFile) signingConfig signingConfigs.release
+        }
+    }
+
+    sourceSets {
+        main.assets.srcDirs += webAssets
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+tasks.named('preBuild') { dependsOn syncWebApp }
+
+// No library dependencies: the wrapper uses only the Android framework.

@@ -129,7 +129,7 @@ export default function phonics(root, kit) {
 
   function speak(text, rate = 0.75) {
     if (!speech()) return;
-    try { speechSynthesis.cancel(); } catch (e) {}
+    audio.hush();
     audio.say(text, { rate });
   }
   function bounce(L) { L.pop.style.animationDelay = '0s'; L.pop.classList.remove('popin'); replay(L.pop, 'hop'); }
@@ -198,7 +198,7 @@ export default function phonics(root, kit) {
     if (!focus || anim) return;
     const c = focus;
     seq++;
-    try { speechSynthesis.cancel(); } catch (e) {}
+    audio.hush();
     lettersG.style.transition = 'opacity .3s';
     lettersG.style.opacity = 0;
     sfx.whoosh(0.4);
@@ -209,7 +209,7 @@ export default function phonics(root, kit) {
     });
   }
   bg.addEventListener('pointerdown', (e) => { e.preventDefault(); back(); });
-  kit.add(() => { seq++; try { speechSynthesis.cancel(); } catch (e) {} });
+  kit.add(() => { seq++; audio.hush(); });
 
   kit.loop((dt) => {
     if (anim) {

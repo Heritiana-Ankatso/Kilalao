@@ -6,7 +6,7 @@ import { loop } from './lib.js';
 import { installLock, openParent } from './parent.js';
 import { startSeason } from './season.js';
 
-export const VERSION = '1.0.0';
+export const VERSION = '1.0.1';
 
 // Shelf order: calmer sensory toys first, richer story/logic toys after.
 export const TOYS = ['busyboard', 'shapes', 'blocks', 'silly', 'marble', 'town', 'house', 'code', 'sequencer',
@@ -168,14 +168,24 @@ function wake() {
 }
 
 // ---------- Adult corner ----------
-const offline = { ready: false };
+// Inside the Android app every file is already packaged on the device.
+const ANDROID = !!window.KilalaoAndroid;
+const offline = { ready: ANDROID };
 installLock(() => openParent({ toys: TOYS, version: VERSION, wake, offline: offline.ready }));
 
 // ---------- Offline support ----------
-if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
+if (!ANDROID && 'serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
   navigator.serviceWorker.register('sw.js').then(() => navigator.serviceWorker.ready).then(() => { offline.ready = true; }).catch(() => {});
 }
 
 // Keep the page from scrolling or zooming on touch devices.
+// Android back button: close the open toy. On the shelf it does nothing, so a
+// child cannot leave the app by accident (adults use the system home gesture).
+window.kilalaoBack = () => {
+  if (document.querySelector('.adult')) { document.querySelector('.adult [data-close]')?.click(); return true; }
+  if (current) { closeToy(); return true; }
+  return false;
+};
+
 document.addEventListener('gesturestart', (e) => e.preventDefault());
 document.addEventListener('contextmenu', (e) => { if (!e.target.closest('.adult')) e.preventDefault(); });

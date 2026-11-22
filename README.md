@@ -71,6 +71,45 @@ Kilalao is a Progressive Web App:
 - Use **Add to Home Screen** (iOS and Android) or **Install app** (desktop Chrome and Edge). It opens fullscreen in landscape mode.
 - After the first visit it works without any network connection.
 
+## Android app
+
+The `android/` folder holds a small native Android wrapper. It packages the whole `app/` folder inside the APK, so the toys work offline from the first launch. The app asks for **no permissions**. It runs full screen in landscape on Android 7.0 (API 24) or newer, on phones and tablets.
+
+**Install on a phone or tablet (sideloading)**
+
+1. Copy `kilalao-<version>.apk` to the device, or download it from the repository's *Releases* page.
+2. Open it. When Android asks, allow your browser or file manager to install unknown apps.
+3. Tap **Install**. Kilalao then appears in the app drawer.
+
+**How the app differs from the website**
+
+- The **Back** button closes the open toy or the adult panel. On the shelf it does nothing, so a child cannot leave the app by accident. Adults can leave with the system Home gesture.
+- Phonics speaks through Android's own **text-to-speech engine**, because the Android WebView has no speech synthesis. An English voice must be installed (Settings → System → Languages → Text-to-speech).
+- Settings are kept per device, exactly as in the browser.
+
+**Build it yourself** (needs JDK 17 or newer and the Android SDK with platform 35):
+
+```bash
+cd android
+```
+
+```bash
+./gradlew assembleDebug
+```
+
+The APK is written to `android/app/build/outputs/apk/debug/`. For a signed release build, create `android/keystore.properties`. It is git-ignored and must never be committed:
+
+```properties
+storeFile=/path/to/kilalao-release.jks
+storePassword=...
+keyAlias=kilalao
+keyPassword=...
+```
+
+Then run `./gradlew assembleRelease`. Every update must be signed with the **same key**, or Android refuses to install it over the existing app. Before each release, increase `versionCode` and `versionName` in `android/app/build.gradle`.
+
+**Automatic builds:** `.github/workflows/android.yml` builds a debug APK on every push to `main`. Pushing a tag such as `v1.0.1` builds a signed APK and attaches it to a GitHub Release. This needs the repository secrets `KILALAO_KEYSTORE_BASE64` (`base64 -w0 kilalao-release.jks`), `KILALAO_KEYSTORE_PASSWORD` and `KILALAO_KEY_PASSWORD`.
+
 ## Run locally
 
 ```bash
@@ -116,9 +155,10 @@ app/                     Everything that is served (deployed as-is)
     icons.js             Shelf icon for every toy
     people.js            Shared diverse characters (Town, House)
     toys/<id>.js         One file per toy
+android/                 Native Android wrapper (WebView + bundled app/)
 docs/ARCHITECTURE.md     How the pieces fit together
 tools/shoot.py           Headless smoke test and screenshots
-.github/workflows/       GitHub Pages deployment
+.github/workflows/       GitHub Pages deployment and Android builds
 ```
 
 ## Adding a toy
