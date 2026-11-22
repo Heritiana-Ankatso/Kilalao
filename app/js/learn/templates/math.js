@@ -307,11 +307,16 @@ export const TEMPLATES = {
           let objs = [], gone = [];
           if (P.visual) {
             const kind = pickKind(rng);
+            const sc = P.max <= 5 ? 1.25 : 1;
             if (add) {
-              objs = [...group(ctx, a, kind, { x: 260, y: 330, w: 460, h: 280 }, { minDist: 92, scale: 0.85, color: COLORS[0] }),
-                ...group(ctx, b, kind, { x: 880, y: 330, w: 460, h: 280 }, { minDist: 92, scale: 0.85, color: COLORS[1] })];
+              // Two trays joined by a big plus: the structure of addition is visible.
+              const trays = [490, 1110].map((x) => { const c = card(ctx.layer, x, 450, 470, 300, C.cream); c.g.classList.remove('tap'); return c; });
+              numeral(ctx.layer, '+', 800, 450, 120, C.stone);
+              objs = [...group(ctx, a, kind, { x: 310, y: 350, w: 360, h: 200 }, { minDist: 100 * sc, scale: sc, color: COLORS[0] }),
+                ...group(ctx, b, kind, { x: 930, y: 350, w: 360, h: 200 }, { minDist: 100 * sc, scale: sc, color: COLORS[1] })];
             } else {
-              const all = group(ctx, a, kind, { x: 300, y: 320, w: 1000, h: 300 }, { minDist: 95, scale: 0.85 });
+              const tray = card(ctx.layer, 800, 450, 1000, 300, C.cream); tray.g.classList.remove('tap');
+              const all = group(ctx, a, kind, { x: 360, y: 350, w: 880, h: 200 }, { minDist: 100 * sc, scale: sc });
               gone = all.slice(a - b); objs = all.slice(0, a - b);
               gone.forEach((o) => { o.style.transition = 'opacity .8s'; o.style.opacity = 0.35; s('path', ink({ d: 'M-26 -26 L26 26 M26 -26 L-26 26', fill: 'none', stroke: C.terra }, 6), o); });
             }
