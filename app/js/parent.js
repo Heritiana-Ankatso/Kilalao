@@ -1,9 +1,13 @@
 // The adult area: hold the top-right corner, answer a sum, then change settings.
 import { settings, playtime } from './settings.js';
+import * as profiles from './learn/profiles.js';
+import * as mastery from './learn/mastery.js';
+import { LANGS } from './learn/i18n.js';
+import { MATH } from './learn/curriculum/math.js';
 
 const HOLD_MS = 2200;
 const NAMES = {
-  busyboard: 'Busy Board', shapes: 'Shapes', blocks: 'Blocks', silly: 'Silly Blocks', marble: 'Marble Machine',
+  learn: 'Learn (adaptive lessons)', busyboard: 'Busy Board', shapes: 'Shapes', blocks: 'Blocks', silly: 'Silly Blocks', marble: 'Marble Machine',
   town: 'Town & Shops', house: 'House & Dress-Up', code: 'Code Factory', sequencer: 'Sequencer', radio: 'Radio',
   puzzle: 'World Puzzle', islands: 'Islands', book: 'Busy Book', space: 'Space', dinos: 'Dinosaurs',
   phonics: 'Phonics', draw: 'Drawing',
@@ -71,6 +75,12 @@ function panel(card, ctx) {
       <label class="row-set"><span>Phonics voice</span><input type="checkbox" data-k="speech" ${s.speech ? 'checked' : ''}></label>
     </section>
     <section>
+      <h3>Learning</h3>
+      <p class="muted">Each child has their own adaptive path. Lessons start near the child's age and adjust to what they know. Children never see scores; this report is only for you.</p>
+      <div data-profiles></div>
+      <div class="btns"><button class="btn" data-addp>Add a child</button></div>
+    </section>
+    <section>
       <h3>Play time</h3>
       <label class="row-set"><span>Daily limit</span><select data-k="limit">
         ${opt(0, s.limit, 'No limit')}${opt(10, s.limit, '10 minutes')}${opt(20, s.limit, '20 minutes')}${opt(30, s.limit, '30 minutes')}${opt(45, s.limit, '45 minutes')}${opt(60, s.limit, '1 hour')}
@@ -115,6 +125,42 @@ function panel(card, ctx) {
   });
   card.querySelector('[data-more]').onclick = () => { playtime.reset(); ctx.wake(); card.querySelector('[data-more]').textContent = 'Done: the toys are awake'; };
   card.querySelector('[data-close]').onclick = ctx.close;
+  const box = card.querySelector('[data-profiles]');
+  const draw = () => renderProfiles(box, draw);
+  draw();
+  card.querySelector('[data-addp]').onclick = () => { if (profiles.list().length === 0) profiles.active(); profiles.add({ age: 5 }); draw(); };
+}
+
+const esc = (v) => String(v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+function renderProfiles(box, redraw) {
+  const list = profiles.list();
+  if (!list.length) profiles.active();
+  const opt = (v, cur, label) => `<option value="${v}" ${String(v) === String(cur) ? 'selected' : ''}>${label}</option>`;
+  box.innerHTML = profiles.list().map((p) => {
+    const sum = mastery.summary(MATH, p.id, p);
+    const recent = profiles.log(p.id).filter((e) => e.t > Date.now() - 7 * 86400000);
+    const acc = recent.length ? Math.round((100 * recent.filter((e) => e.ok).length) / recent.length) : null;
+    const rows = sum.rows.map((r) => `<tr><td>${esc(r.skill.desc)}</td><td>${r.skill.age}</td><td>${r.status === 'assumed' ? 'assumed (age)' : r.status}</td><td>${r.n ? `${r.c}/${r.n}` : ''}</td></tr>`).join('');
+    return `<div class="profile" data-id="${p.id}">
+      <label class="row-set"><span>Name</span><input type="text" data-f="name" value="${esc(p.name)}" maxlength="30"></label>
+      <label class="row-set"><span>Age</span><select data-f="age">${[3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((a) => opt(a, p.age, a)).join('')}</select></label>
+      <label class="row-set"><span>Language</span><select data-f="lang">${Object.entries(LANGS).map(([k, v]) => opt(k, p.lang, v.name)).join('')}</select></label>
+      <label class="row-set"><span>Animal</span><select data-f="avatar">${profiles.AVATARS.map((a) => opt(a, p.avatar, a)).join('')}</select></label>
+      <p><b>Math:</b> ${sum.mastered} of ${MATH.length} skills secure, ${sum.practising} in practice${sum.assumed ? `, ${sum.assumed} assumed from age (checked gradually in review)` : ''}.${acc !== null ? ` Last 7 days: ${recent.length} answers, ${acc}% right first time.` : ' No practice yet.'}</p>
+      <p class="muted">Working on: ${sum.next.length ? sum.next.map((s) => esc(s.desc)).join('; ') : 'everything in this track is secure'}.</p>
+      <details><summary>All math skills</summary><table class="skills"><tr><th>Skill</th><th>Age</th><th>Status</th><th>Right</th></tr>${rows}</table></details>
+      <div class="btns"><button class="btn" data-remove>Remove this child</button></div>
+    </div>`;
+  }).join('');
+  box.querySelectorAll('.profile').forEach((el) => {
+    const id = el.dataset.id;
+    el.querySelectorAll('[data-f]').forEach((f) => f.addEventListener('change', () => { profiles.update(id, { [f.dataset.f]: f.value }); if (f.dataset.f === 'age') redraw(); }));
+    el.querySelector('[data-remove]').onclick = () => {
+      if (profiles.list().length <= 1) return;
+      if (confirm('Remove this child and their learning record?')) { profiles.remove(id); redraw(); }
+    };
+  });
 }
 
 export function openParent(ctx) {

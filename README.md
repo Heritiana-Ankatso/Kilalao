@@ -1,6 +1,6 @@
 # Kilalao
 
-**A calm digital playroom for children aged 2 to 7.** Seventeen open-ended toys sit on a wooden shelf. There is no text, no instructions, no scores, no levels, no timers, no ads, no links and no purchases. Everything is drawn and synthesized in the browser, so the whole app works offline once it has been opened.
+**A calm digital playroom and adaptive learning app for children aged 2 to 12.** Seventeen open-ended toys sit on a wooden shelf. There is no text, no instructions, no scores, no levels, no timers, no ads, no links and no purchases. Everything is drawn and synthesized in the browser, so the whole app works offline once it has been opened.
 
 *Kilalao* means "toy" or "play" in Malagasy.
 
@@ -22,6 +22,18 @@ Kilalao draws on Montessori and low-stimulation ideas about play:
 | Order and care | Pieces can be tidied back into their trays. The shelf is a fixed and predictable place to come back to. |
 | Limits set by adults | A daily play-time limit lets the toys gently fall asleep instead of cutting play off abruptly. |
 | Inclusion | People in Town and House have a range of skin tones and hair. Some wear glasses or hearing aids, and some use a wheelchair or a prosthetic leg. |
+
+## Learn: the adaptive learning path (ages 3–12)
+
+The first item on the shelf, **Learn**, is a curriculum that adapts to each child. It complements the free-play toys:
+
+- **Profiles:** each child picks their own animal. Adults set the name, age and language in the adult corner.
+- **Adaptive path:** every answer updates a per-skill mastery estimate (Bayesian Knowledge Tracing). The next session targets the edge of what the child knows, mixes in spaced review, and starts near the child's age. Easier skills are checked rather than taught, and fall back into teaching if a child misses them.
+- **Calm feedback:** a right answer gets a soft chime. A first wrong answer gets a short demonstration (for example, counting the objects together), then the correct answer glows. Children never see scores, stars, streaks or rewards.
+- **Three languages:** English, French and Malagasy prompts and number words. Narration uses recorded voice packs when present (needed for Malagasy, see `app/audio/README.md`), otherwise the device voice. It stays silent rather than using a voice in the wrong language. From age 7, the question is also shown as text.
+- **Adult report:** in the adult corner, each child's skills are listed as secure, in practice or not started, with recent accuracy and the skills being worked on.
+
+**Phase 1 (this release): Math, 37 skills from age 3 to about 10,** built from 10 interactive templates. The skills run from counting, subitising and number bonds through place value with tens-and-ones blocks, addition and subtraction, skip counting and equal groups, to fractions on a number line. Reading, logic and coding, and social-emotional learning follow. See [docs/ROADMAP.md](docs/ROADMAP.md) for the full plan, scale targets and constraints.
 
 ## The 17 toys
 
@@ -58,6 +70,7 @@ Adults can change the following:
 - **Calm mode:** fewer particles and slower motion.
 - **Daily play-time limit:** when the limit is reached, the toys fall asleep under a starry sky. Waking them from the adult corner resets the day's count.
 - **Seasons** on the shelf (follow the calendar, off, or a fixed season) and the **hemisphere** (auto-detected from the time zone).
+- **Learning:** add a profile for each child (name, age 3–12, language, animal). The panel shows each child's progress report.
 - **Phonics voice:** the device's built-in, offline speech synthesis.
 - **Hide toys** from the shelf.
 
@@ -154,10 +167,16 @@ app/                     Everything that is served (deployed as-is)
     season.js            Seasonal decorations on the shelf
     icons.js             Shelf icon for every toy
     people.js            Shared diverse characters (Town, House)
-    toys/<id>.js         One file per toy
+    toys/<id>.js         One file per toy (toys/learn.js runs the Learn sessions)
+    learn/               Learning engine: profiles, mastery (BKT), scheduler,
+                         i18n (en/fr/mg), voice, drawing kit,
+                         curriculum/<subject>.js (skill graphs), templates/<subject>.js
+  audio/                 Optional recorded voice packs (manifest.json + clips)
 android/                 Native Android wrapper (WebView + bundled app/)
 docs/ARCHITECTURE.md     How the pieces fit together
 tools/shoot.py           Headless smoke test and screenshots
+tools/learn-test.py      Plays every Learn skill (wrong answer, help, right answers)
+tools/recording-script.mjs  Prints the voice-recording script for a language
 .github/workflows/       GitHub Pages deployment and Android builds
 ```
 
@@ -183,6 +202,15 @@ tools/shoot.py           Headless smoke test and screenshots
 5. Run `python3 tools/shoot.py` and check the screenshot.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the design rules every toy must follow.
+
+## Adding a skill or a template
+
+Most curriculum work is data:
+
+1. To add a **skill**, add one line to `app/js/learn/curriculum/math.js` with an id, typical age, prerequisites, template, parameters and an adult-facing description.
+2. To add a **template** (a new interactive mechanic), add an entry to `TEMPLATES` in `app/js/learn/templates/<subject>.js`. Its `make(rng, params)` returns `{ key, vars, guess, build(ctx) }`. `build` draws the item and answers through `ctx.choices()` or `ctx.pick()`, and may return `{ help }` for the demonstration after a wrong answer.
+3. New prompts go into all three languages in `app/js/learn/i18n.js`.
+4. Run `python3 tools/learn-test.py <skill-id>` and look at `build/learn/`. To try a skill by hand, open `http://localhost:4210/?skill=math.<id>` and tap Learn.
 
 ## Licence
 

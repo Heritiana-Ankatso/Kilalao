@@ -6,6 +6,11 @@ const box = (bg, inner) => `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/
 <g stroke="${ink}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">${inner}</g></svg>`;
 
 export const ICONS = {
+  learn: box('#93ab8b', `
+    <path d="M40 166 q40 -10 60 -40 q20 -30 60 -40" fill="none" stroke="#efe3cc" stroke-width="14"/>
+    <ellipse cx="52" cy="160" rx="16" ry="9" fill="#efe3cc"/><ellipse cx="96" cy="130" rx="15" ry="8" fill="#efe3cc"/><ellipse cx="128" cy="100" rx="13" ry="7" fill="#efe3cc"/>
+    <rect x="148" y="66" width="8" height="26" fill="#7a5a44"/><circle cx="152" cy="56" r="20" fill="#d8a650"/>
+    <path d="M46 56 h26 M59 43 v26" stroke="#fbf7ef" stroke-width="8"/><path d="M86 48 l14 14 M100 48 l-14 14" stroke="#c97b63" stroke-width="7"/>`),
   busyboard: box('#c9a073', `
     <rect x="38" y="52" width="52" height="40" rx="12" fill="#efe3cc"/>
     <line x1="64" y1="72" x2="78" y2="54" stroke-width="9"/><circle cx="79" cy="52" r="8" fill="#c97b63"/>

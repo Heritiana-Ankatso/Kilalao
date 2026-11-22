@@ -103,9 +103,7 @@ public class MainActivity extends Activity {
 
         tts = new TextToSpeech(this, status -> {
             if (status == TextToSpeech.SUCCESS) {
-                int r = tts.setLanguage(Locale.US);
-                if (r < 0) r = tts.setLanguage(Locale.ENGLISH);
-                ttsReady = r >= 0;
+                ttsReady = true; // the language is chosen per utterance
             }
         });
 
@@ -204,11 +202,31 @@ public class MainActivity extends Activity {
         super.onDestroy();
     }
 
-    /** Exposed to the page as window.KilalaoAndroid (used by the Phonics toy). */
+    /** Exposed to the page as window.KilalaoAndroid (Phonics and Learn narration). */
     private class Bridge {
+        private String currentLang = "";
+
+        private Locale locale(String lang) {
+            if (lang == null || lang.isEmpty()) return Locale.US;
+            return Locale.forLanguageTag(lang.replace('_', '-'));
+        }
+
+        /** True when the device has a text-to-speech voice for this language. */
+        @JavascriptInterface
+        public boolean hasVoice(String lang) {
+            if (!ttsReady) return false;
+            int r = tts.isLanguageAvailable(locale(lang));
+            return r >= TextToSpeech.LANG_AVAILABLE;
+        }
+
         @JavascriptInterface
         public void say(String text, double rate, double pitch, double volume, String lang) {
-            if (!ttsReady || text == null || text.length() > 200) return;
+            if (!ttsReady || text == null || text.length() > 300) return;
+            String want = lang == null ? "en-US" : lang;
+            if (!want.equals(currentLang)) {
+                if (tts.setLanguage(locale(want)) < 0) return; // never read with the wrong voice
+                currentLang = want;
+            }
             tts.setSpeechRate((float) Math.max(0.3, Math.min(2, rate)));
             tts.setPitch((float) Math.max(0.5, Math.min(2, pitch)));
             Bundle p = new Bundle();

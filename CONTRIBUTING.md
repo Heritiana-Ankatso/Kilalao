@@ -6,7 +6,7 @@ Contributions are welcome, including new toys, fixes, accessibility work and tra
 
 **For children**
 
-- **No text in toys.** Children may not read yet. The only exception is the letters in Phonics. Words belong only in the adult corner.
+- **No text in toys.** Children may not read yet. The only exceptions are the letters in Phonics and, in Learn, numerals and symbols, plus the question text shown to readers from age 7. Words belong only in the adult corner.
 - **No goals, scores, stars, levels, timers, streaks or rewards.** Nothing is "correct" or "wrong" and nothing ends.
 - **No ads, links, purchases, accounts, analytics or network requests.**
 - **Calm by default:** slow easing, no flashing, no sudden loud sounds and no screen shake. Respect `kit.calm` (calm mode) by reducing particles and speed.
@@ -19,6 +19,13 @@ Contributions are welcome, including new toys, fixes, accessibility work and tra
 - Use the muted palette `C` in `lib.js`.
 - Outlines use `stroke: C.ink` with a width of 3 to 4.
 - Keep the **top-left 90 × 90** area free (home button) and the **top-right corner** free (adult lock).
+
+**Learn area**
+
+- Children never see scores, stars, streaks, timers or rewards. Progress belongs in the adult report.
+- Feedback stays calm: a soft chime for right answers, and a demonstration (not a buzzer) after a wrong one.
+- Every prompt must exist in English, French and Malagasy. Mark new French and Malagasy strings for native-speaker review in the pull request.
+- New skills need an adult-facing description, a typical age and prerequisites. Ask a teacher to review the sequence.
 
 ## Technical rules
 
@@ -35,7 +42,7 @@ Contributions are welcome, including new toys, fixes, accessibility work and tra
 ## Before opening a pull request
 
 1. Run `python3 -m http.server 4210 -d app` and try the change on a touch device or in device emulation.
-2. Run `python3 tools/shoot.py`. Every toy must print `ok`. Look at the screenshots in `build/shots/`.
+2. Run `python3 tools/shoot.py`. Every toy must print `ok`. Look at the screenshots in `build/shots/`. For Learn changes, also run `python3 tools/learn-test.py` and look at `build/learn/`.
 3. If you added or renamed files under `app/`, update `FILES` in `app/sw.js` and bump `VERSION`.
 4. Check offline mode: load the app once, turn off the network and reload.
 5. If you can, build the Android app (`cd android && ./gradlew assembleDebug`) and try it on a device. New file types under `app/` may need a MIME type in `MainActivity.java`.

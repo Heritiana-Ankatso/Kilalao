@@ -217,6 +217,11 @@ button { font: inherit; color: inherit; }
 .adult .err { color: #a2412c; min-height: 1.2em; }
 .adult section { margin-top: 18px; }
 .adult h3 { margin: 0 0 4px; font-size: 1.05rem; }
+.adult .profile { border: 1px solid rgba(74,63,53,.15); border-radius: 14px; padding: 4px 14px 10px; margin: 10px 0; background: #fbf5e8; }
+.adult input[type=text] { font: inherit; padding: 6px 10px; border-radius: 10px; border: 1px solid rgba(74,63,53,.3); background: #fffaf0; width: 50%; }
+.adult details { margin: 6px 0; }
+.adult table.skills { width: 100%; border-collapse: collapse; font-size: .88rem; margin-top: 6px; }
+.adult table.skills td, .adult table.skills th { text-align: left; padding: 3px 6px; border-bottom: 1px solid rgba(74,63,53,.1); }
 
 /* ---------- Shared toy animations ---------- */
 .fb { transform-box: fill-box; transform-origin: 50% 50%; }

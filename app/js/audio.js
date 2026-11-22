@@ -178,12 +178,23 @@ export function say(text, { rate = 0.8, pitch = 1.1, lang = 'en' } = {}) {
   try {
     const u = new SpeechSynthesisUtterance(text);
     u.rate = rate; u.pitch = pitch; u.volume = muted ? 0 : Math.min(1, volume + 0.2);
-    const v = speechSynthesis.getVoices().find((x) => x.lang && x.lang.toLowerCase().startsWith(lang));
+    const l2 = String(lang).toLowerCase().slice(0, 2);
+    const v = speechSynthesis.getVoices().find((x) => x.lang && x.lang.toLowerCase().startsWith(l2));
     if (v) u.voice = v;
-    u.lang = v ? v.lang : 'en-US';
+    u.lang = v ? v.lang : (lang.length > 2 ? lang : 'en-US');
     speechSynthesis.speak(u);
     return true;
   } catch (e) { return false; }
+}
+
+// Is there a voice for this language (e.g. 'fr', 'mg')? Without one, the Learn
+// area stays silent rather than reading a language with the wrong voice.
+export function hasVoice(lang) {
+  const n = nativeTTS();
+  if (n) { try { return typeof n.hasVoice === 'function' ? !!n.hasVoice(lang) : lang === 'en'; } catch (e) { return false; } }
+  if (!('speechSynthesis' in window)) return false;
+  const l = String(lang).toLowerCase().slice(0, 2);
+  return speechSynthesis.getVoices().some((v) => v.lang && v.lang.toLowerCase().startsWith(l));
 }
 
 // Stop any speech in progress.
