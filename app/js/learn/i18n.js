@@ -12,6 +12,35 @@ export const LANGS = {
 
 export const PROMPTS = {
   en: {
+    whoFeels: 'Who feels {feel}?',
+    feelIs: '{feel}.',
+    sceneSad: 'Oh no, the balloon flew away. How does your friend feel?',
+    sceneHappy: 'A present for your friend! How does your friend feel?',
+    sceneAngry: 'Someone knocked the tower down. How does your friend feel?',
+    sceneScared: 'A big storm is coming. How does your friend feel?',
+    sceneSurprised: 'Pop! Something jumped out of the box. How does your friend feel?',
+    whySad: 'When we lose something we love, we can feel sad.',
+    whyHappy: 'A nice surprise can make us feel happy.',
+    whyAngry: 'When someone breaks what we made, we can feel angry.',
+    whyScared: 'Loud thunder can make us feel scared.',
+    whySurprised: 'When something happens all of a sudden, we feel surprised.',
+    whatHelps: 'Your friend feels sad. What could help?',
+    helpKind: 'Staying close and being kind can help.',
+    breatheStart: "Let's breathe slowly together.",
+    smell: 'Smell the flower.',
+    blow: 'Blow out the candle.',
+    fbFeel: 'You looked at the face carefully.',
+    fbKind: 'That is a kind thing to do.',
+    fbCalm: 'Slow breaths help us feel calm.',
+    whatNext: 'What comes next?',
+    oddOne: 'Which one is different?',
+    whereGoes: 'Where does it go?',
+    codePath: 'Show your friend the way to the apple.',
+    fixCode: 'One arrow is wrong. Which one?',
+    fbPattern: 'You found the pattern.',
+    fbSort: 'You looked at what is the same.',
+    fbCode: 'Step by step, you planned the way.',
+    fbDebug: 'You found the bug and fixed it.',
     howMany: 'How many?',
     quick: 'Look quickly. How many?',
     more: 'Which has more?',
@@ -54,6 +83,35 @@ export const PROMPTS = {
     fbKeptGoing: 'You kept trying and found it.',
   },
   fr: {
+    whoFeels: 'Qui est {feel} ?',
+    feelIs: '{feel}.',
+    sceneSad: "Oh non, le ballon s'est envolé. Comment se sent ton ami ?",
+    sceneHappy: 'Un cadeau pour ton ami ! Comment se sent ton ami ?',
+    sceneAngry: "Quelqu'un a fait tomber la tour. Comment se sent ton ami ?",
+    sceneScared: 'Un gros orage arrive. Comment se sent ton ami ?',
+    sceneSurprised: "Pop ! Quelque chose a sauté de la boîte. Comment se sent ton ami ?",
+    whySad: "Quand on perd quelque chose qu'on aime, on peut être triste.",
+    whyHappy: 'Une jolie surprise peut nous rendre contents.',
+    whyAngry: "Quand quelqu'un casse ce qu'on a fait, on peut être en colère.",
+    whyScared: 'Le tonnerre très fort peut nous faire peur.',
+    whySurprised: "Quand quelque chose arrive d'un coup, on est surpris.",
+    whatHelps: "Ton ami est triste. Qu'est-ce qui peut l'aider ?",
+    helpKind: 'Rester près de lui et être gentil, ça aide.',
+    breatheStart: 'Respirons doucement ensemble.',
+    smell: 'Sens la fleur.',
+    blow: 'Souffle la bougie.',
+    fbFeel: 'Tu as bien regardé le visage.',
+    fbKind: "C'est gentil de faire ça.",
+    fbCalm: 'Respirer lentement, ça calme.',
+    whatNext: "Qu'est-ce qui vient après ?",
+    oddOne: 'Lequel est différent ?',
+    whereGoes: 'Où va-t-il ?',
+    codePath: 'Montre à ton ami le chemin de la pomme.',
+    fixCode: 'Une flèche est fausse. Laquelle ?',
+    fbPattern: 'Tu as trouvé la suite.',
+    fbSort: 'Tu as bien regardé ce qui est pareil.',
+    fbCode: 'Pas à pas, tu as préparé le chemin.',
+    fbDebug: "Tu as trouvé l'erreur et tu l'as réparée.",
     howMany: 'Combien ?',
     quick: 'Regarde vite. Combien ?',
     more: 'Où y en a-t-il le plus ?',
@@ -96,6 +154,35 @@ export const PROMPTS = {
     fbKeptGoing: 'Tu as persévéré et tu as trouvé.',
   },
   mg: {
+    whoFeels: 'Iza no {feel}?',
+    feelIs: '{feel}.',
+    sceneSad: 'Indrisy, lasan\'ny rivotra ny balaona. Inona no tsapan\'ny namanao?',
+    sceneHappy: 'Fanomezana ho an\'ny namanao! Inona no tsapany?',
+    sceneAngry: 'Nisy nandrava ny tilikambo. Inona no tsapan\'ny namanao?',
+    sceneScared: 'Misy oram-baratra mahery ho avy. Inona no tsapan\'ny namanao?',
+    sceneSurprised: 'Pop! Nisy zavatra nitsambikina avy tao anaty boaty. Inona no tsapan\'ny namanao?',
+    whySad: 'Rehefa very ny zavatra tiantsika, dia mety ho malahelo isika.',
+    whyHappy: 'Ny zavatra tsara tsy nampoizina dia mahafaly antsika.',
+    whyAngry: 'Rehefa misy mandrava ny zavatra nataontsika, dia mety ho tezitra isika.',
+    whyScared: 'Ny kotrokorana mafy dia mety hampatahotra antsika.',
+    whySurprised: 'Rehefa misy zavatra mitranga tampoka, dia gaga isika.',
+    whatHelps: 'Malahelo ny namanao. Inona no mety hanampy azy?',
+    helpKind: 'Ny fijanonana eo akaikiny sy ny hatsaram-panahy dia manampy.',
+    breatheStart: 'Andao hiaina moramora miaraka.',
+    smell: 'Fofony ny voninkazo.',
+    blow: 'Tsofy ny labozia.',
+    fbFeel: 'Nojerenao tsara ny tarehy.',
+    fbKind: 'Zavatra tsara fanahy izany.',
+    fbCalm: 'Ny fiainana moramora dia mampitony antsika.',
+    whatNext: 'Inona no manaraka?',
+    oddOne: 'Iza no tsy mitovy amin\'ny hafa?',
+    whereGoes: 'Aiza no hametrahana azy?',
+    codePath: 'Asehoy ny namanao ny lalana mankany amin\'ny paoma.',
+    fixCode: 'Misy zana-tsipika diso iray. Iza izy?',
+    fbPattern: 'Hitanao ny filaharana.',
+    fbSort: 'Nojerenao tsara izay mitovy.',
+    fbCode: 'Dingana tsirairay no nanomananao ny lalana.',
+    fbDebug: 'Hitanao ny hadisoana ary namboarinao.',
     howMany: 'Firy?',
     quick: 'Jereo haingana. Firy?',
     more: 'Aiza no betsaka kokoa?',
@@ -201,12 +288,19 @@ export function numberWord(n, lang) {
 }
 
 // Fill a prompt. Numbers become words for speech, digits for display.
+// Feeling words (adjectives), used by the feelings track.
+export const FEEL_WORDS = {
+  en: { happy: 'happy', sad: 'sad', angry: 'angry', scared: 'scared', surprised: 'surprised' },
+  fr: { happy: 'content', sad: 'triste', angry: 'en colère', scared: 'effrayé', surprised: 'surpris' },
+  mg: { happy: 'faly', sad: 'malahelo', angry: 'tezitra', scared: 'matahotra', surprised: 'gaga' },
+};
+
 export function prompt(key, vars, lang, forSpeech) {
   const table = PROMPTS[lang] || PROMPTS.en;
   let s = table[key] || PROMPTS.en[key] || key;
   for (const k in vars || {}) {
     const v = vars[k];
-    const shown = typeof v === 'number' ? (forSpeech ? numberWord(v, lang) : String(v)) : k === 'f' ? (forSpeech ? fractionName(v, lang) : v) : String(v);
+    const shown = typeof v === 'number' ? (forSpeech ? numberWord(v, lang) : String(v)) : k === 'f' ? (forSpeech ? fractionName(v, lang) : v) : k === 'feel' ? ((FEEL_WORDS[lang] || FEEL_WORDS.en)[v] || v) : String(v);
     s = s.split(`{${k}}`).join(shown);
   }
   return s;
@@ -224,7 +318,7 @@ export function clipPlan(key, vars, lang) {
     const m = part.match(/^\{([a-z]+)\}$/);
     if (m) {
       const v = vars[m[1]];
-      out.push(typeof v === 'number' ? `n/${v}` : `f/${String(v).replace('/', '-')}`);
+      out.push(typeof v === 'number' ? `n/${v}` : m[1] === 'feel' ? `e/${v}` : `f/${String(v).replace('/', '-')}`);
     } else if (/\p{L}/u.test(part)) out.push(`p/${key}.${i++}`); // skip bare punctuation
   });
   return out;

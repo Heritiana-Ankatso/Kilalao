@@ -1,16 +1,16 @@
 // Kilalao: the shelf, toy loading, play-time limit and adult corner.
 import * as audio from './audio.js';
 import { settings, playtime } from './settings.js';
-import { ICONS, HOME_SVG } from './icons.js';
+import { ICONS, HOME_SVG, EMBLEMS } from './icons.js';
+import { THEMES, ENTRIES, parseEntry } from './themes.js';
 import { loop } from './lib.js';
 import { installLock, openParent } from './parent.js';
 import { startSeason } from './season.js';
 
-export const VERSION = '1.6.0';
+export const VERSION = '1.7.0';
 
-// Shelf order: calmer sensory toys first, richer story/logic toys after.
-export const TOYS = ['learn', 'busyboard', 'shapes', 'blocks', 'silly', 'marble', 'town', 'house', 'code', 'sequencer',
-  'radio', 'puzzle', 'islands', 'book', 'space', 'dinos', 'phonics', 'draw'];
+// Shelf entries, grouped by theme (see themes.js).
+export const TOYS = ENTRIES;
 
 const app = document.getElementById('app');
 let current = null;
@@ -44,27 +44,43 @@ function makeKit() {
   };
 }
 
-// ---------- Shelf ----------
+// ---------- Shelf: one cubby per theme ----------
 const shelf = document.createElement('div');
 shelf.className = 'view shelf';
-shelf.innerHTML = `<div class="shelf-scroll"><div class="shelf-inner"><div class="row"></div><div class="row"></div></div></div>`;
+shelf.innerHTML = `<div class="shelf-scroll"><div class="shelf-inner cubbies"></div></div>`;
 app.appendChild(shelf);
-const rows = [...shelf.querySelectorAll('.row')];
+const inner = shelf.querySelector('.shelf-inner');
+let rows = [];
 let stopSeason = () => {};
 
 function buildShelf() {
   const hidden = new Set(settings.get('hidden'));
-  const list = TOYS.filter((id) => !hidden.has(id));
-  rows.forEach((r) => (r.innerHTML = ''));
-  const half = Math.ceil(list.length / 2);
-  list.forEach((id, i) => {
-    const b = document.createElement('button');
-    b.className = 'toy';
-    b.setAttribute('aria-label', id);
-    b.innerHTML = ICONS[id];
-    b.style.setProperty('--d', `${(i % half) * 45 + (i >= half ? 120 : 0)}ms`);
-    b.addEventListener('click', () => openToy(id, b));
-    rows[i < half ? 0 : 1].appendChild(b);
+  inner.innerHTML = '';
+  rows = [];
+  THEMES.forEach((theme, ti) => {
+    const list = theme.items.filter((id) => !hidden.has(id) && ICONS[id]);
+    if (!list.length) return;
+    const cub = document.createElement('section');
+    cub.className = 'cubby';
+    cub.dataset.theme = theme.id;
+    cub.setAttribute('aria-label', theme.name);
+    cub.style.setProperty('--tint', theme.tint);
+    cub.innerHTML = `<div class="emblem">${EMBLEMS[theme.id] || ''}</div>`;
+    const r1 = document.createElement('div'), r2 = document.createElement('div');
+    r1.className = r2.className = 'row';
+    cub.append(r1, r2);
+    list.forEach((id, i) => {
+      const b = document.createElement('button');
+      b.className = 'toy';
+      b.setAttribute('aria-label', id);
+      b.innerHTML = ICONS[id];
+      b.style.setProperty('--d', `${ti * 70 + (i % 2) * 40 + (i >= 2 ? 90 : 0)}ms`);
+      b.addEventListener('click', () => openToy(id, b));
+      (i < 2 ? r1 : r2).appendChild(b);
+    });
+    if (!r2.children.length) r2.remove(); else rows.push(r2);
+    rows.unshift(r1);
+    inner.appendChild(cub);
   });
   stopSeason();
   stopSeason = startSeason(shelf, rows);
@@ -82,9 +98,10 @@ async function openToy(id, btn) {
   audio.init();
   audio.sfx.pop(0.9);
   btn.classList.add('chosen');
+  const { toy, opts } = parseEntry(id);
   let mod;
   try {
-    mod = await import(`./toys/${id}.js`);
+    mod = await import(`./toys/${toy}.js`);
   } catch (e) {
     console.error(e);
     btn.classList.remove('chosen');
@@ -103,6 +120,7 @@ async function openToy(id, btn) {
   view.appendChild(home);
   app.appendChild(view);
   const kit = makeKit();
+  kit.opts = opts;
   try { mod.default(root, kit); } catch (e) { console.error(e); }
   home.addEventListener('click', closeToy);
   current = { view, kit, id };

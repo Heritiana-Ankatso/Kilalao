@@ -11,25 +11,36 @@ import { prompt } from '../learn/i18n.js';
 import { MATH } from '../learn/curriculum/math.js';
 import { TEMPLATES as MATH_T } from '../learn/templates/math.js';
 import { TEMPLATES as READ_T } from '../learn/templates/reading.js';
+import { TEMPLATES as LOGIC_T } from '../learn/templates/logic.js';
+import { LOGIC } from '../learn/curriculum/logic.js';
+import { TEMPLATES as FEEL_T } from '../learn/templates/feelings.js';
+import { FEEL } from '../learn/curriculum/feelings.js';
 import { READING, READING_ALL, PHON, SPELLING } from '../learn/curriculum/reading.js';
 import { ink, card, FONT, CHOICE_Y, handPointer, centerOf } from '../learn/draw.js';
 import { makeOwl, avatar } from '../learn/characters.js';
 import { drawVillage, nextFriends, lessonFriend } from '../learn/village.js';
 export { avatar };
 
-export const SUBJECTS = { math: MATH };
-const TEMPLATES = { ...MATH_T, ...READ_T };
+export const SUBJECTS = { math: MATH, logic: LOGIC, feel: FEEL };
+const TEMPLATES = { ...MATH_T, ...READ_T, ...LOGIC_T, ...FEEL_T };
 // The skill tracks open to a child: math for everyone, reading in the child's language.
-export function tracksFor(profile) {
+export function tracksFor(profile, subject) {
   const t = { math: MATH };
   const r = READING[profile.lang];
   if (r && r.length) t.reading = r;
+  t.logic = LOGIC;
+  t.feel = FEEL;
+  // Opened from a themed shelf: only that subject (all subjects if it has no skills yet).
+  if (subject && t[subject]) return { [subject]: t[subject] };
   return t;
 }
+const ALL_SKILLS = () => [...MATH, ...READING_ALL, ...LOGIC, ...FEEL];
+const skillsOf = (sk) => (sk.subject === 'reading' ? READING_ALL.filter((x) => x.lang === sk.lang) : sk.subject === 'logic' ? LOGIC : sk.subject === 'feel' ? FEEL : MATH);
 const GUIDE = { x: 165, y: 885, scale: 0.7 };
 
 export default function learn(root, kit) {
   const { sfx, audio } = kit;
+  const subject = kit.opts && kit.opts.subject;
   const svg = makeStage(root, '#efe4cf');
   const layer = s('g', null, svg);
   const top = s('g', null, svg); // guide hand and input shield live above the activity
@@ -60,11 +71,11 @@ export default function learn(root, kit) {
   // ---------- The village: choose who to help ----------
   function home(profile, justHelped) {
     audio.init();
-    const tracks = tracksFor(profile);
+    const tracks = tracksFor(profile, subject);
     // ?skill=<id> skips the village (used by tools/learn-test.py and curriculum authors).
     const want = new URLSearchParams(location.search).get('skill');
-    const forced = [...MATH, ...READING_ALL].find((sk) => sk.id === want);
-    if (forced) { start(profile, { skill: forced, skills: forced.subject === 'math' ? MATH : READING_ALL.filter((x) => x.lang === forced.lang), friend: nextFriends(profile, 1)[0], forced: true }); return; }
+    const forced = ALL_SKILLS().find((sk) => sk.id === want);
+    if (forced) { start(profile, { skill: forced, skills: skillsOf(forced), friend: nextFriends(profile, 1)[0], forced: true }); return; }
     clear(); fadeIn();
     layer.dataset.mode = 'village';
     // Offer the next quest of each track, then a second one or a review, up to three.
@@ -182,7 +193,7 @@ export default function learn(root, kit) {
       let first = true, locked = false, correctCard = null, help = null, solved = false;
       const choiceCards = [];
       const ctx = {
-        layer, rng: Math.random, lang, calm: kit.calm, wait, mode,
+        layer, rng: Math.random, lang, calm: kit.calm, wait, mode, audio, friend: quest && quest.friend, avatar: profile.avatar,
         later: (ms, f) => kit.after(ms, f),
         say: (key, vars) => voice.sayPrompt(lang, key, vars || {}),
         sayNumber: (n) => voice.sayNumber(lang, n),
@@ -229,6 +240,7 @@ export default function learn(root, kit) {
             // Specific, process-focused feedback (what the child did), never "you're clever".
             if (mode !== 'watch') voice.sayPrompt(lang, hintLevel ? 'fbKeptGoing' : (out.fb || 'fbLook'));
             sfx.chime([659, 784, 880, 1046][Math.floor(Math.random() * 4)], 0.45);
+            if (out.after) await out.after();
             await wait(mode === 'watch' ? 1600 : 1100);
             handAway();
             resolve();
@@ -254,6 +266,7 @@ export default function learn(root, kit) {
       };
       const out = item.build(ctx) || {};
       help = out.help || null;
+      if (out.init) out.init();
       const friend = quest && !out.ownFriend ? lessonFriend(layer, quest.friend) : null;
 
       (async () => {

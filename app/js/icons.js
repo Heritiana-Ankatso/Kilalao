@@ -108,6 +108,37 @@ export const ICONS = {
     <path d="M110 112 l8 22 l12 -16 z" fill="#efe3cc" transform="rotate(0)"/>`),
 };
 
+// Learn, opened on one subject: the owl's stepping-stone path plus the subject's sign.
+const path = `<path d="M40 166 q40 -10 60 -40 q20 -30 60 -40" fill="none" stroke="#efe3cc" stroke-width="14"/>
+    <ellipse cx="52" cy="160" rx="16" ry="9" fill="#efe3cc"/><ellipse cx="96" cy="130" rx="15" ry="8" fill="#efe3cc"/><ellipse cx="128" cy="100" rx="13" ry="7" fill="#efe3cc"/>
+    <rect x="148" y="66" width="8" height="26" fill="#7a5a44"/><circle cx="152" cy="56" r="20" fill="#d8a650"/>`;
+ICONS['learn:math'] = ICONS.learn;
+ICONS['learn:reading'] = box('#d9a08c', `${path}
+    <rect x="34" y="38" width="34" height="40" rx="8" fill="#d6e6e3"/><rect x="74" y="38" width="34" height="40" rx="8" fill="#f2dcd2"/>
+    <path d="M58 52 q-12 -4 -12 6 q0 8 12 6 M90 50 q10 -6 12 4 v10 M100 58 q-10 -4 -10 4 q4 6 10 0" fill="none" stroke="#5e8f8f" stroke-width="4"/>`);
+ICONS['learn:logic'] = box('#8fb3b0', `${path}
+    <rect x="30" y="38" width="34" height="34" rx="7" fill="#5e8f8f"/><rect x="70" y="38" width="34" height="34" rx="7" fill="#5e8f8f"/>
+    <path d="M38 55 h18 m-7 -7 l7 7 l-7 7 M87 46 v18 m-7 -7 l7 7 l7 -7" fill="none" stroke="#fbf7ef" stroke-width="4"/>`);
+ICONS['learn:feel'] = box('#b9a0b4', `${path}
+    <circle cx="50" cy="58" r="20" fill="#d8a650"/><path d="M42 54 v1 M58 54 v1 M42 64 q8 7 16 0" fill="none" stroke-width="4"/>
+    <path d="M96 48 c-6 -9 -20 -3 -12 8 l12 12 l12 -12 c8 -11 -6 -17 -12 -8 z" fill="#c97b63"/>`);
+ICONS.stories = box('#efe3cc', `
+    <rect x="40" y="56" width="34" height="112" rx="6" fill="#c97b63"/><rect x="80" y="44" width="34" height="124" rx="6" fill="#5e8f8f"/>
+    <rect x="120" y="66" width="30" height="102" rx="6" fill="#d8a650" transform="rotate(12 135 117)"/>
+    <path d="M48 78 h18 M88 66 h18 M88 150 h18" stroke="#fbf7ef" stroke-width="5"/>
+    <circle cx="97" cy="104" r="9" fill="#fbf7ef" stroke-width="3"/>`);
+
+// Theme emblems for the cubbies (viewBox 0 0 64 64).
+const em = (bg, inner) => `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="32" cy="32" r="29" fill="${bg}" stroke="${ink}" stroke-width="3"/><g stroke="${ink}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">${inner}</g></svg>`;
+export const EMBLEMS = {
+  numbers: em('#f1dca6', `<circle cx="20" cy="26" r="5" fill="#c97b63"/><circle cx="32" cy="26" r="5" fill="#c97b63"/><circle cx="44" cy="26" r="5" fill="#c97b63"/><path d="M22 48 l10 -14 l10 14 z" fill="#5e8f8f"/>`),
+  letters: em('#f0cfc4', `<path d="M32 20 q-8 -4 -18 -2 v26 q10 -2 18 2 z" fill="#fbf7ef"/><path d="M32 20 q8 -4 18 -2 v26 q-10 -2 -18 2 z" fill="#efe3cc"/>`),
+  thinking: em('#c7dcda', `<rect x="12" y="22" width="18" height="18" rx="4" fill="#5e8f8f"/><rect x="34" y="22" width="18" height="18" rx="4" fill="#5e8f8f"/><path d="M16 31 h10 m-4 -4 l4 4 l-4 4 M43 26 v10 m-4 -4 l4 4 l4 -4" fill="none" stroke="#fbf7ef" stroke-width="2.5"/>`),
+  nature: em('#d5e3c5', `<path d="M18 46 q-2 -26 28 -28 q2 28 -28 28 z" fill="#86a36f"/><path d="M18 46 l22 -22" fill="none"/>`),
+  me: em('#e2d3df', `<circle cx="24" cy="32" r="9" fill="#d8a650"/><circle cx="40" cy="32" r="9" fill="#c97b63"/><path d="M32 46 c-3 -4 -9 -1 -5 3 l5 5 l5 -5 c4 -4 -2 -7 -5 -3 z" fill="#c97b63" stroke-width="2"/>`),
+  making: em('#d3dfe8', `<path d="M14 34 q0 -16 18 -16 q18 0 18 12 q0 6 -8 6 q-6 0 -4 6 q2 8 -6 8 q-18 0 -18 -16 z" fill="#efe3cc"/><circle cx="24" cy="30" r="3" fill="#c97b63" stroke="none"/><circle cx="32" cy="25" r="3" fill="#5e8f8f" stroke="none"/><circle cx="40" cy="28" r="3" fill="#d8a650" stroke="none"/>`),
+};
+
 export const HOME_SVG = `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
 <g stroke="${ink}" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
 <rect x="14" y="18" width="36" height="30" rx="4" fill="#dcbb8e"/>

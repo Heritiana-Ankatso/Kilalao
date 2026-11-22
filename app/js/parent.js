@@ -12,7 +12,8 @@ const NAMES = {
   learn: 'Learn (adaptive lessons)', busyboard: 'Busy Board', shapes: 'Shapes', blocks: 'Blocks', silly: 'Silly Blocks', marble: 'Marble Machine',
   town: 'Town & Shops', house: 'House & Dress-Up', code: 'Code Factory', sequencer: 'Sequencer', radio: 'Radio',
   puzzle: 'World Puzzle', islands: 'Islands', book: 'Busy Book', space: 'Space', dinos: 'Dinosaurs',
-  phonics: 'Phonics', draw: 'Drawing',
+  phonics: 'Phonics', draw: 'Drawing', stories: 'Stories (read-along books)',
+  'learn:math': 'Learn: numbers', 'learn:reading': 'Learn: letters and sounds', 'learn:logic': 'Learn: thinking and coding', 'learn:feel': 'Learn: feelings',
 };
 
 export function installLock(onOpen) {

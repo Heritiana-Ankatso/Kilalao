@@ -12,6 +12,7 @@ import { s, C, replay } from '../lib.js';
 import { avatar } from './characters.js';
 import { ink, card } from './draw.js';
 import { shade, line, ground } from './art.js';
+import { feelFace } from './templates/feelings.js';
 import { AVATARS } from './profiles.js';
 
 const HOUSE_SPOTS = [[330, 300], [560, 250], [800, 230], [1040, 250], [1270, 300], [420, 450], [1180, 450], [800, 400]];
@@ -30,14 +31,14 @@ function blob(cx, cy, r, n, depth, squash = 1) {
   return d + ' Z';
 }
 
-function tree(g, x, y, k) {
+export function tree(g, x, y, k) {
   ground(g, x + 10 * k, y + 70 * k, 60 * k, 11 * k, '#4f5b3a', 0.16);
   shade(g, 'path', { d: `M${x - 10 * k} ${y + 70 * k} L${x - 7 * k} ${y + 8 * k} L${x + 7 * k} ${y + 8 * k} L${x + 10 * k} ${y + 70 * k} Z` }, { fill: '#9a7250', shadow: '#7d5d4a', line: '#5e4434', w: 2.5, d: [5, 0] });
   const c = shade(g, 'path', { d: blob(x, y - 10 * k, 56 * k, 8, 12 * k) }, { fill: '#87a86e', shadow: '#6a8b62', line: '#4f6b45', w: 3, d: [16 * k, 14 * k], hi: [x - 22 * k, y - 38 * k, 24 * k, 16 * k], lo: 0.22 });
   line(c, `M${x + 8 * k} ${y - 30 * k} q10 -4 16 4 M${x - 26 * k} ${y + 4 * k} q8 -6 16 0`, '#6a8b62', 2.5);
 }
 
-function flower(g, x, y, col) {
+export function flower(g, x, y, col) {
   line(g, `M${x} ${y + 6} L${x} ${y + 18}`, '#5f7f55', 2.5);
   for (let i = 0; i < 5; i++) {
     const a = (i / 5) * Math.PI * 2;
@@ -113,6 +114,19 @@ export function activityIcon(g, template, x, y, k = 1) {
       for (let i = 0; i < 3; i++) s('rect', ink({ x: x - sc(42) + sc(i * 29), y: y - sc(18), width: sc(25), height: sc(32), rx: sc(5), fill: i === 1 ? '#f2dcd2' : '#d6e6e3' }, 2.5), g);
       if (template === 'blend') t(`M${x - sc(36)} ${y + sc(26)} h${sc(66)} l${-sc(10)} ${-sc(6)} m${sc(10)} ${sc(6)} l${-sc(10)} ${sc(6)}`, { stroke: C.terra });
       break;
+    // Logic and coding
+    case 'pattern': [C.terra, C.teal, C.terra].forEach((col, i) => s('circle', ink({ cx: x + sc((i - 1.2) * 26), cy: y, r: sc(11), fill: col }, 2.5), g)); s('circle', ink({ cx: x + sc(1.8 * 26), cy: y, r: sc(11), fill: 'none', 'stroke-dasharray': '4 4' }, 2.5), g); break;
+    case 'oddone': [C.ochre, C.ochre, C.teal].forEach((col, i) => s('rect', ink({ x: x + sc((i - 1) * 28) - sc(11), y: y - sc(11), width: sc(22), height: sc(22), rx: sc(4), fill: col }, 2.5), g)); break;
+    case 'sortit': s('path', ink({ d: `M${x - sc(36)} ${y} h${sc(30)} l${-sc(4)} ${sc(20)} h${-sc(22)} z M${x + sc(6)} ${y} h${sc(30)} l${-sc(4)} ${sc(20)} h${-sc(22)} z`, fill: C.wood }, 2.5), g); s('circle', ink({ cx: x - sc(21), cy: y - sc(8), r: sc(7), fill: C.terra }, 2), g); s('circle', ink({ cx: x + sc(21), cy: y - sc(8), r: sc(7), fill: C.teal }, 2), g); break;
+    case 'path': case 'debug':
+      for (let i = 0; i < 3; i++) { s('rect', ink({ x: x - sc(42) + sc(i * 29), y: y - sc(14), width: sc(25), height: sc(28), rx: sc(5), fill: template === 'debug' && i === 1 ? C.terra : C.teal }, 2.5), g); s('path', { d: `M${x - sc(36) + sc(i * 29)} ${y} h${sc(12)} m${-sc(5)} ${-sc(5)} l${sc(5)} ${sc(5)} l${-sc(5)} ${sc(5)}`, fill: 'none', stroke: C.white, 'stroke-width': sc(3), 'stroke-linecap': 'round' }, g); }
+      break;
+    // Feelings
+    case 'feelFind': case 'feelScene': case 'feelHelp':
+      feelFace(g, x - sc(22), y, sc(18), 'happy', 'bear'); feelFace(g, x + sc(22), y, sc(18), template === 'feelHelp' ? 'sad' : 'surprised', 'cat');
+      if (template === 'feelHelp') s('path', { d: `M${x} ${y - sc(30)} c${-sc(5)} ${-sc(7)} ${-sc(15)} ${-sc(2)} ${-sc(9)} ${sc(6)} l${sc(9)} ${sc(9)} l${sc(9)} ${-sc(9)} c${sc(6)} ${-sc(8)} ${-sc(4)} ${-sc(13)} ${-sc(9)} ${-sc(6)} Z`, fill: C.terra }, g);
+      break;
+    case 'breathe': s('circle', { cx: x, cy: y, r: sc(26), fill: 'none', stroke: C.teal, 'stroke-width': sc(4), opacity: 0.6 }, g); s('circle', { cx: x, cy: y, r: sc(14), fill: 'none', stroke: C.teal, 'stroke-width': sc(4) }, g); break;
     default: s('circle', ink({ cx: x, cy: y, r: sc(20), fill: C.ochre }, 3), g);
   }
 }

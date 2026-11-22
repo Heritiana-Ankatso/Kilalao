@@ -18,6 +18,8 @@ OUT = pathlib.Path(__file__).resolve().parent.parent / 'build' / 'learn'
 OUT.mkdir(parents=True, exist_ok=True)
 root = pathlib.Path(__file__).resolve().parent.parent / 'app/js/learn/curriculum'
 SKILLS = ['math.' + m for m in re.findall(r"S\('([a-z0-9]+)'", (root / 'math.js').read_text())]
+SKILLS += ['feel.' + m for m in re.findall(r"S\('([a-zA-Z0-9]+)'", (root / 'feelings.js').read_text())]
+SKILLS += ['logic.' + m for m in re.findall(r"S\('([a-zA-Z0-9]+)'", (root / 'logic.js').read_text())]
 SKILLS += [f'read.{l}.{m}' for l, m in re.findall(r"S\('(en|fr)', '([a-z0-9]+)'", (root / 'reading.js').read_text())]
 
 errors = []
@@ -47,6 +49,9 @@ with sync_playwright() as p:
         fire(wd); return 'spelled'; }
       const gv = q('g[data-give]');
       if (gv) { all('g[data-inb="1"]').forEach(fire); const n = Number(gv.dataset.give); all('g[data-item]').slice(0, n).forEach(fire); fire(gv); return 'given'; }
+      const rt = q('g[data-route]');
+      if (rt && rt.dataset.route) { all('g[data-undo]').forEach((u) => { for (let i = 0; i < 12; i++) fire(u); });
+        for (const ch of rt.dataset.route) fire(q(`g[data-arrow="${ch}"]`)); fire(rt); return 'coded'; }
       fire(q('g[data-ok]')); return 'picked'; }"""
     ACT_WRONG = """() => {
       const all = (s) => [...document.querySelectorAll('.toyroot ' + s)];
@@ -57,10 +62,12 @@ with sync_playwright() as p:
       if (gv) { fire(gv); return; }  // empty basket: wrong
       const wd = document.querySelector('.toyroot g[data-word]');
       if (wd) { fire(wd); return; }  // empty word: wrong
+      const rt = document.querySelector('.toyroot g[data-route]');
+      if (rt && rt.dataset.route) { const u = document.querySelector('.toyroot g[data-undo]'); for (let i = 0; i < 12; i++) fire(u); fire(rt); return; }  // empty program: wrong
       const c = all('g.tap').filter(g => !g.dataset.ok && !g.dataset.bin && !g.dataset.item && !g.dataset.tile && !g.dataset.letter && g.querySelector('rect,circle') && g.getBoundingClientRect().top > 120 && g.getBoundingClientRect().left > 250);
       fire(c[c.length - 1]); }"""
     for sk in SKILLS:
-        if ONLY and sk not in ONLY and sk.split('.')[1] not in ONLY:
+        if ONLY and sk not in ONLY and sk.split('.')[1] not in ONLY and sk.split('.')[0] not in ONLY:
             continue
         before = len(errors)
         page.goto(f'{BASE}/?skill={sk}')
@@ -68,7 +75,7 @@ with sync_playwright() as p:
         page.evaluate("""localStorage.setItem('kilalao.learn.v1', JSON.stringify({active: 't', profiles: [{id: 't', name: 'Test', avatar: 'fox', age: 3, lang: 'en', created: 1}], mastery: {}, log: {}}))""")
         page.goto(f'{BASE}/?skill={sk}')
         page.wait_for_timeout(700)
-        page.evaluate("document.querySelector('.toy[aria-label=\"learn\"]').click()")
+        page.evaluate("document.querySelector('.toy[aria-label^=\"learn\"]').click()")
         page.wait_for_timeout(1200)
         seen, wrong_done, steps, shots = set(), False, 0, 0
         for _ in range(160):

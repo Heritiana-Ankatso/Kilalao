@@ -14,8 +14,8 @@ BASE = sys.argv[1] if len(sys.argv) > 1 and sys.argv[1].startswith('http') else 
 ONLY = [a for a in sys.argv[1:] if not a.startswith('http')]
 OUT = pathlib.Path(__file__).resolve().parent.parent / 'build' / 'shots'
 OUT.mkdir(parents=True, exist_ok=True)
-TOYS = ['learn', 'busyboard', 'shapes', 'blocks', 'silly', 'marble', 'town', 'house', 'code', 'sequencer',
-        'radio', 'puzzle', 'islands', 'book', 'space', 'dinos', 'phonics', 'draw']
+TOYS = ['learn:math', 'shapes', 'blocks', 'learn:reading', 'stories', 'phonics', 'book', 'learn:logic', 'code', 'marble',
+        'busyboard', 'islands', 'space', 'dinos', 'puzzle', 'learn:feel', 'town', 'house', 'silly', 'draw', 'sequencer', 'radio']
 
 errors = []
 with sync_playwright() as p:
