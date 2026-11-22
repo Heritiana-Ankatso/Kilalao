@@ -2,6 +2,7 @@
 // countable objects, ten-frames, base-ten blocks, numerals and answer buttons.
 import { s, C, replay } from '../lib.js';
 
+import { finish } from './art.js';
 export const INK = C.ink;
 export const FONT = 'ui-rounded, "Nunito", "Varela Round", "Arial Rounded MT Bold", "Segoe UI", system-ui, sans-serif';
 export const ink = (o, w = 4) => ({ stroke: INK, 'stroke-width': w, 'stroke-linejoin': 'round', 'stroke-linecap': 'round', ...o });
@@ -57,6 +58,7 @@ export function obj(parent, kind, x, y, scale = 1, color) {
   const o = s('g', { transform: `translate(${x.toFixed(1)} ${y.toFixed(1)}) scale(${scale})` }, parent);
   const inner = s('g', { class: 'fb' }, o);
   KINDS[kind](inner, color);
+  finish(inner, { amount: 0.1 });
   o.inner = inner;
   o.x = x; o.y = y; o.scale = scale;
   return o;

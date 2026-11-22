@@ -10,6 +10,7 @@ instructions only (no code runs). Each folder keeps its original licence.
 | `motion-design` | [LottieFiles/motion-design-skill](https://github.com/lottiefiles/motion-design-skill) | MIT |
 | `character-appeal`, `animator-traditional`, `anticipation-payoff`, `timing-mastery` | [dylantarre/animation-principles](https://github.com/dylantarre/animation-principles) | MIT |
 | `cpa-sequence-designer`, `variation-theory-task-designer`, `learning-progression-builder`, `three-part-lesson-designer`, `prepared-environment-designer`, `worked-example-fading-designer`, `progressive-hint-ladder`, `adaptive-hint-sequence-designer`, `erroneous-example-designer`, `retrieval-practice-generator`, `spaced-practice-scheduler`, `interleaving-unit-planner`, `cognitive-load-analyser`, `dual-coding-designer`, `feedback-quality-analyser`, `flow-state-condition-designer`, `self-efficacy-builder-sequence`, `motivation-diagnostic-task-redesign`, `awe-wonder-experience-designer`, `udl-options-designer` | [GarethManning/education-agent-skills](https://github.com/GarethManning/education-agent-skills) (copied unmodified) | CC BY-SA 4.0 |
+| `svg-illustration-finish` (Kilalao rules; technique notes copied unmodified) | [Emasoft/ai-maestro-webdesign](https://github.com/Emasoft/ai-maestro-webdesign) | Apache 2.0 (references) |
 | `k12-check-for-understanding`, `k12-lesson-prep` | [anthropics/k12-teacher-skills](https://github.com/anthropics/k12-teacher-skills) (copied unmodified) | Apache 2.0 (with NOTICE) |
 
 Kilalao-specific overrides (these win over the skills' defaults):

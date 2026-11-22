@@ -6,7 +6,7 @@ import { loop } from './lib.js';
 import { installLock, openParent } from './parent.js';
 import { startSeason } from './season.js';
 
-export const VERSION = '1.5.0';
+export const VERSION = '1.6.0';
 
 // Shelf order: calmer sensory toys first, richer story/logic toys after.
 export const TOYS = ['learn', 'busyboard', 'shapes', 'blocks', 'silly', 'marble', 'town', 'house', 'code', 'sequencer',

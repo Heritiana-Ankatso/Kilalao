@@ -4,6 +4,7 @@
 // text anywhere in Kilalao's toys.
 import { s, C, makeStage, ease, lerp, replay } from '../lib.js';
 import { PICTURES } from '../learn/pictures.js';
+import { finish } from '../learn/art.js';
 
 const WORDS = ['cat', 'sun', 'dog', 'hat', 'bus', 'cup', 'pig', 'bed', 'fox'];
 const PHONEME = { c: 'kuh', a: 'ah', t: 'tuh', s: 'sss', u: 'uh', n: 'nnn', d: 'duh', o: 'aw', g: 'guh', h: 'hhh', b: 'buh', p: 'puh', i: 'ih', e: 'eh', f: 'fff', x: 'ks' };
@@ -41,6 +42,7 @@ export default function phonics(root, kit) {
     s('rect', ink({ x: -CW / 2, y: -CH / 2, width: CW, height: CH, rx: 30, fill: ['#f6eedf', '#f3ead4', '#f6eedf'][i % 3] }), wob);
     const art = s('g', { transform: 'scale(.9)' }, wob);
     DRAW[w](art);
+    finish(art);
     c.g.addEventListener('pointerdown', (e) => { e.preventDefault(); e.stopPropagation(); tapCard(c); });
     return c;
   });

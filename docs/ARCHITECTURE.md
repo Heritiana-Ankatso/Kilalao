@@ -110,6 +110,10 @@ toys/learn.js ── profiles.js   children on this device (localStorage kilalao
   - The owl exposes `talk`, `lookAt`, `point`, `nod`, `think`, `hop` and `rest`. The fox exposes `lean`, `happy` and `puzzled`.
   - The lesson runner ticks every on-screen rig and drives them: talk while prompting, look and point at the hand's target, nod on a right answer, think before the help.
   - Avatars are static drawings with a CSS eyelid blink.
+- **Illustration finish** (`art.js`, rules in `.claude/skills/svg-illustration-finish`):
+  - One light from the upper left. `shade()` draws a shape with a soft coloured form shadow (an offset copy clipped to the shape, so it follows the outline and moves with the rig), an optional light patch and an outline in a deep tone of the shape's own colour.
+  - `finish(g)` applies the same lighting automatically to flat drawings after they are drawn: the 32 reading pictures, the counting objects and the Phonics cards.
+  - Helpers for eyes with catch-lights, fluffy edges and contact shadows. No SVG filters, so drawing stays cheap on low-end tablets.
 - **Privacy:** profiles and the attempt log (the last 1,500 answers) stay in `localStorage` and never leave the device.
 
 ## Android wrapper

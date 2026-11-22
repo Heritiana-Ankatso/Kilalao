@@ -9,6 +9,7 @@
 import { s, C, replay } from '../../lib.js';
 import { ink, card, FONT, shuffle, INK, CHOICE_Y } from '../draw.js';
 import { PICTURES } from '../pictures.js';
+import { finish } from '../art.js';
 import { WORDS, SPELLING, PICTURE, ANCHOR, RHYMES } from '../curriculum/reading.js';
 
 const pick = (rng, a) => a[Math.floor(rng() * a.length)];
@@ -24,6 +25,7 @@ function letterText(parent, text, x, y, size, fill = INK, opacity = 1) {
 function picture(parent, name, x, y, scale = 1) {
   const g = s('g', { transform: `translate(${x} ${y}) scale(${scale})` }, parent);
   (PICTURES[name] || PICTURES.cat)(g);
+  finish(g);
   return g;
 }
 const vowel = (u) => /^[aeiouéy]/.test(shown(u));
