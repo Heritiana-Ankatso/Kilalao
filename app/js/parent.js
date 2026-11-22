@@ -4,6 +4,7 @@ import * as profiles from './learn/profiles.js';
 import * as mastery from './learn/mastery.js';
 import { LANGS } from './learn/i18n.js';
 import { MATH } from './learn/curriculum/math.js';
+import { READING } from './learn/curriculum/reading.js';
 
 const HOLD_MS = 2200;
 const NAMES = {
@@ -147,6 +148,10 @@ function renderProfiles(box, redraw) {
     const helped = hints.filter((e) => e.hint > 0).length, heavy = hints.filter((e) => e.hint >= 3).length;
     const helpLine = hints.length ? ` Help needed on ${helped} of ${hints.length} items${heavy ? ` (${heavy} needed a full demonstration)` : ''}.` : '';
     const quests = ((p.village && p.village.helped) || []).length;
+    const RS = READING[p.lang] || [];
+    const rsum = RS.length ? mastery.summary(RS, p.id, p) : null;
+    const readLine = rsum ? `<p><b>Reading (${esc(LANGS[p.lang].name)}):</b> ${rsum.mastered} of ${RS.length} skills secure, ${rsum.practising} in practice${rsum.assumed ? `, ${rsum.assumed} assumed from age` : ''}. Working on: ${rsum.next.length ? rsum.next.map((s) => esc(s.desc)).join('; ') : 'all secure'}.</p>` : `<p class="muted"><b>Reading:</b> not yet available in ${esc(LANGS[p.lang].name)} (it needs recorded sounds). Switch the language to English or French to try it.</p>`;
+    const readRows = rsum ? rsum.rows.map((r) => `<tr><td>${esc(r.skill.desc)}</td><td>${r.skill.age}</td><td>${r.status === 'assumed' ? 'assumed (age)' : r.status}</td><td>${r.n ? `${r.c}/${r.n}` : ''}</td></tr>`).join('') : '';
     const rows = sum.rows.map((r) => `<tr><td>${esc(r.skill.desc)}</td><td>${r.skill.age}</td><td>${r.status === 'assumed' ? 'assumed (age)' : r.status}</td><td>${r.n ? `${r.c}/${r.n}` : ''}</td></tr>`).join('');
     return `<div class="profile" data-id="${p.id}">
       <label class="row-set"><span>Name</span><input type="text" data-f="name" value="${esc(p.name)}" maxlength="30"></label>
@@ -155,7 +160,8 @@ function renderProfiles(box, redraw) {
       <label class="row-set"><span>Animal</span><select data-f="avatar">${profiles.AVATARS.map((a) => opt(a, p.avatar, a)).join('')}</select></label>
       <p><b>Math:</b> ${sum.mastered} of ${MATH.length} skills secure, ${sum.practising} in practice${sum.assumed ? `, ${sum.assumed} assumed from age (checked gradually in review)` : ''}.${acc !== null ? ` Last 7 days: ${recent.length} answers, ${acc}% right first time.` : ' No practice yet.'}${helpLine}${quests ? ` Friends helped in the village: ${quests}.` : ''}</p>
       <p class="muted">Working on: ${sum.next.length ? sum.next.map((s) => esc(s.desc)).join('; ') : 'everything in this track is secure'}.</p>
-      <details><summary>All math skills</summary><table class="skills"><tr><th>Skill</th><th>Age</th><th>Status</th><th>Right</th></tr>${rows}</table></details>
+      ${readLine}
+      <details><summary>All skills</summary><table class="skills"><tr><th>Skill</th><th>Age</th><th>Status</th><th>Right</th></tr>${rows}${readRows}</table></details>
       <div class="btns"><button class="btn" data-remove>Remove this child</button></div>
     </div>`;
   }).join('');

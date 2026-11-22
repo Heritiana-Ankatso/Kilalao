@@ -16,8 +16,9 @@ BASE = sys.argv[1] if len(sys.argv) > 1 and sys.argv[1].startswith('http') else 
 ONLY = [a for a in sys.argv[1:] if not a.startswith('http')]
 OUT = pathlib.Path(__file__).resolve().parent.parent / 'build' / 'learn'
 OUT.mkdir(parents=True, exist_ok=True)
-src = (pathlib.Path(__file__).resolve().parent.parent / 'app/js/learn/curriculum/math.js').read_text()
-SKILLS = ['math.' + m for m in re.findall(r"S\('([a-z0-9]+)'", src)]
+root = pathlib.Path(__file__).resolve().parent.parent / 'app/js/learn/curriculum'
+SKILLS = ['math.' + m for m in re.findall(r"S\('([a-z0-9]+)'", (root / 'math.js').read_text())]
+SKILLS += [f'read.{l}.{m}' for l, m in re.findall(r"S\('(en|fr)', '([a-z0-9]+)'", (root / 'reading.js').read_text())]
 
 errors = []
 with sync_playwright() as p:
@@ -29,7 +30,7 @@ with sync_playwright() as p:
     page = b.new_page(viewport={'width': 1280, 'height': 800})
     page.on('pageerror', lambda e: errors.append(f'pageerror: {e}'))
     page.on('console', lambda m: m.type == 'error' and errors.append(f'console: {m.text}'))
-    ACT_RIGHT = """() => {
+    ACT_RIGHT = r"""() => {
       const q = (s) => document.querySelector('.toyroot ' + s), all = (s) => [...document.querySelectorAll('.toyroot ' + s)];
       const fire = (g) => g && g.dispatchEvent(new PointerEvent('pointerdown', {bubbles: true}));
       // touch-to-count objects first (as a child would)
@@ -40,6 +41,10 @@ with sync_playwright() as p:
         const n = Number(t.dataset.target);
         for (let i = 0; i < Math.floor(n / 10); i++) fire(q('g[data-bin=tens]')); for (let i = 0; i < n % 10; i++) fire(q('g[data-bin=ones]'));
         fire(t); return 'built'; }
+      const wd = q('g[data-word]');
+      if (wd) { all('g[data-letter]').forEach((g) => { if (g.getAttribute('transform') && /translate\([0-9.]+ 345\)/.test(g.getAttribute('transform'))) fire(g); });
+        for (const ch of wd.dataset.word) { const t = all('g[data-letter]').find((g) => g.dataset.letter === ch && !/ 345\)/.test(g.getAttribute('transform'))); fire(t); }
+        fire(wd); return 'spelled'; }
       const gv = q('g[data-give]');
       if (gv) { all('g[data-inb="1"]').forEach(fire); const n = Number(gv.dataset.give); all('g[data-item]').slice(0, n).forEach(fire); fire(gv); return 'given'; }
       fire(q('g[data-ok]')); return 'picked'; }"""
@@ -50,7 +55,9 @@ with sync_playwright() as p:
       if (t) { fire(document.querySelector('.toyroot g[data-bin=ones]')); fire(t); return; }
       const gv = document.querySelector('.toyroot g[data-give]');
       if (gv) { fire(gv); return; }  // empty basket: wrong
-      const c = all('g.tap').filter(g => !g.dataset.ok && !g.dataset.bin && !g.dataset.item && g.querySelector('rect,circle') && g.getBoundingClientRect().top > 120 && g.getBoundingClientRect().left > 250);
+      const wd = document.querySelector('.toyroot g[data-word]');
+      if (wd) { fire(wd); return; }  // empty word: wrong
+      const c = all('g.tap').filter(g => !g.dataset.ok && !g.dataset.bin && !g.dataset.item && !g.dataset.tile && !g.dataset.letter && g.querySelector('rect,circle') && g.getBoundingClientRect().top > 120 && g.getBoundingClientRect().left > 250);
       fire(c[c.length - 1]); }"""
     for sk in SKILLS:
         if ONLY and sk not in ONLY and sk.split('.')[1] not in ONLY:

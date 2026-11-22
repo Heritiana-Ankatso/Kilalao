@@ -9,13 +9,23 @@ import * as mastery from '../learn/mastery.js';
 import * as voice from '../learn/voice.js';
 import { prompt } from '../learn/i18n.js';
 import { MATH } from '../learn/curriculum/math.js';
-import { TEMPLATES } from '../learn/templates/math.js';
+import { TEMPLATES as MATH_T } from '../learn/templates/math.js';
+import { TEMPLATES as READ_T } from '../learn/templates/reading.js';
+import { READING, READING_ALL, PHON, SPELLING } from '../learn/curriculum/reading.js';
 import { ink, card, FONT, CHOICE_Y, handPointer, centerOf } from '../learn/draw.js';
 import { makeOwl, avatar } from '../learn/characters.js';
 import { drawVillage, nextFriends, lessonFriend } from '../learn/village.js';
 export { avatar };
 
 export const SUBJECTS = { math: MATH };
+const TEMPLATES = { ...MATH_T, ...READ_T };
+// The skill tracks open to a child: math for everyone, reading in the child's language.
+export function tracksFor(profile) {
+  const t = { math: MATH };
+  const r = READING[profile.lang];
+  if (r && r.length) t.reading = r;
+  return t;
+}
 const GUIDE = { x: 165, y: 885, scale: 0.7 };
 
 export default function learn(root, kit) {
@@ -50,13 +60,17 @@ export default function learn(root, kit) {
   // ---------- The village: choose who to help ----------
   function home(profile, justHelped) {
     audio.init();
-    const skills = SUBJECTS.math;
+    const tracks = tracksFor(profile);
     // ?skill=<id> skips the village (used by tools/learn-test.py and curriculum authors).
-    const forced = skills.find((sk) => sk.id === new URLSearchParams(location.search).get('skill'));
-    if (forced) { start(profile, { skill: forced, friend: nextFriends(profile, 1)[0], forced: true }); return; }
+    const want = new URLSearchParams(location.search).get('skill');
+    const forced = [...MATH, ...READING_ALL].find((sk) => sk.id === want);
+    if (forced) { start(profile, { skill: forced, skills: forced.subject === 'math' ? MATH : READING_ALL.filter((x) => x.lang === forced.lang), friend: nextFriends(profile, 1)[0], forced: true }); return; }
     clear(); fadeIn();
     layer.dataset.mode = 'village';
-    const offers = mastery.offerQuests(skills, profile.id, profile);
+    // Offer the next quest of each track, then a second one or a review, up to three.
+    const per = Object.values(tracks).map((sk) => mastery.offerQuests(sk, profile.id, profile).map((o) => ({ ...o, skills: sk })));
+    const offers = [];
+    for (let k = 0; offers.length < 3 && k < 3; k++) for (const list of per) if (list[k] && offers.length < 3 && !offers.some((o) => o.skill === list[k].skill)) offers.push(list[k]);
     const friends = nextFriends(profile, offers.length);
     const quests = offers.map((o, i) => ({ ...o, friend: friends[i] }));
     const { cards, houses } = drawVillage(layer, profile, quests);
@@ -82,8 +96,7 @@ export default function learn(root, kit) {
 
   // ---------- A quest (one lesson) ----------
   async function start(profile, quest) {
-    const skills = SUBJECTS.math;
-    const lesson = mastery.planLesson(skills, profile.id, profile, quest.skill, !quest.forced);
+    const lesson = mastery.planLesson(quest.skills, profile.id, profile, quest.skill, !quest.forced);
     let lastMode = null, missRun = 0, stuckRun = 0, easier = false;
     for (let i = 0; i < lesson.steps.length && alive; i++) {
       const st = lesson.steps[i];
@@ -123,7 +136,15 @@ export default function learn(root, kit) {
       rigs.push(owl);
       owl.lookAt({ x: 800, y: 450 });
       const promptLen = prompt(item.key, item.vars, lang, true).length;
-      const speak = () => { owl.talk(Math.max(900, promptLen * 75)); voice.sayPrompt(lang, item.key, item.vars); };
+      const sLang = skill.lang || lang; // reading content has its own language
+      const sayU = (u) => voice.saySound(sLang, u, PHON[sLang]);
+      const sayW = (w) => voice.sayWord(sLang, w, SPELLING[sLang] && SPELLING[sLang][w]);
+      const speak = () => {
+        owl.talk(Math.max(900, promptLen * 75));
+        voice.sayPrompt(lang, item.key, item.vars);
+        // The sound or word the question is about comes right after the prompt.
+        if (item.extra) kit.after(Math.max(1100, promptLen * 62), () => item.extra({ sound: sayU, word: sayW }));
+      };
       owlHit.addEventListener('pointerdown', (e) => { e.preventDefault(); speak(); });
       // Listen button (replays the question) and, for readers, the question text.
       const lb = card(layer, 800, 64, 110, 84, C.white);
@@ -163,6 +184,8 @@ export default function learn(root, kit) {
         tick: () => sfx.tick(0.8),
         click: () => sfx.click(),
         point: (t) => handTo(t),
+        sound: (u) => sayU(u),
+        word: (w) => sayW(w),
         addRig: (r) => { rigs.push(r); return r; },
         async press(t, action) {
           await handTo(t);

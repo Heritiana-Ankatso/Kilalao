@@ -55,4 +55,19 @@ export async function sayNumber(lang, n) {
   if (audio.hasVoice(lang)) audio.say(numberWord(n, lang), { rate: 0.9, pitch: 1.05, lang: LANGS[lang].tts });
 }
 
+// A single speech sound (phonics). Recorded clip s/<unit> first; otherwise an
+// approximation by the device voice (isolated sounds are hard for voices).
+export async function saySound(lang, unit, phon) {
+  await loading;
+  if (hasClips(lang, [`s/${unit}`]) && await playClips(lang, [`s/${unit}`])) return;
+  if (audio.hasVoice(lang)) audio.say((phon && phon[unit]) || unit, { rate: 0.7, pitch: 1.05, lang: LANGS[lang].tts });
+}
+
+// A whole word. Recorded clip w/<word> first, then the device voice.
+export async function sayWord(lang, word, written) {
+  await loading;
+  if (hasClips(lang, [`w/${word}`]) && await playClips(lang, [`w/${word}`])) return;
+  if (audio.hasVoice(lang)) audio.say(written || word, { rate: 0.78, pitch: 1.05, lang: LANGS[lang].tts });
+}
+
 export function stop() { stopClips(); audio.hush(); }

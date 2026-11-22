@@ -1,6 +1,6 @@
 // Kilalao service worker: cache-first, so the whole playroom works offline.
 // Bump VERSION whenever any file under app/ changes; old caches are deleted.
-const VERSION = 'kilalao-v1.4.0';
+const VERSION = 'kilalao-v1.5.0';
 const FILES = [
   './',
   'index.html',
@@ -23,6 +23,9 @@ const FILES = [
   'js/learn/characters.js',
   'js/learn/village.js',
   'js/learn/curriculum/math.js',
+  'js/learn/curriculum/reading.js',
+  'js/learn/templates/reading.js',
+  'js/learn/pictures.js',
   'js/learn/templates/math.js',
   'audio/manifest.json',
   'js/toys/learn.js',

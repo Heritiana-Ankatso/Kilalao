@@ -3,6 +3,7 @@
 // letters slide together and the whole word is said. Letters are the only
 // text anywhere in Kilalao's toys.
 import { s, C, makeStage, ease, lerp, replay } from '../lib.js';
+import { PICTURES } from '../learn/pictures.js';
 
 const WORDS = ['cat', 'sun', 'dog', 'hat', 'bus', 'cup', 'pig', 'bed', 'fox'];
 const PHONEME = { c: 'kuh', a: 'ah', t: 'tuh', s: 'sss', u: 'uh', n: 'nnn', d: 'duh', o: 'aw', g: 'guh', h: 'hhh', b: 'buh', p: 'puh', i: 'ih', e: 'eh', f: 'fff', x: 'ks' };
@@ -21,86 +22,8 @@ export default function phonics(root, kit) {
   const ink = (o, w = 4) => ({ stroke: INK, 'stroke-width': w, 'stroke-linejoin': 'round', 'stroke-linecap': 'round', ...o });
 
   // ---------- Pictures (drawn around 0,0, about 200 x 160) ----------
-  const DRAW = {
-    cat(g) {
-      s('path', ink({ d: 'M-40 70 Q-60 10 -20 -6 L20 -6 Q60 10 40 70 Z', fill: C.ochre }), g);
-      s('path', ink({ d: 'M40 60 Q90 50 76 0', fill: 'none' }, 9), g);
-      s('path', { d: 'M40 60 Q90 50 76 0', fill: 'none', stroke: C.ochre, 'stroke-width': 4, 'stroke-linecap': 'round' }, g);
-      s('path', ink({ d: 'M-46 -40 L-40 -90 L-10 -62 Z M46 -40 L40 -90 L10 -62 Z', fill: C.ochre }), g);
-      s('ellipse', ink({ cx: 0, cy: -34, rx: 52, ry: 42, fill: C.ochre }), g);
-      s('path', { d: 'M-38 -72 l-2 -10 M38 -72 l2 -10', stroke: C.rose, 'stroke-width': 6, 'stroke-linecap': 'round' }, g);
-      s('circle', { cx: -18, cy: -40, r: 6, fill: INK }, g); s('circle', { cx: 18, cy: -40, r: 6, fill: INK }, g);
-      s('path', ink({ d: 'M-6 -26 h12 l-6 7 z', fill: C.rose }, 3), g);
-      s('path', { d: 'M0 -19 q-6 8 -12 4 M0 -19 q6 8 12 4 M-24 -24 h-30 M-24 -18 l-28 6 M24 -24 h30 M24 -18 l28 6', stroke: INK, 'stroke-width': 3, fill: 'none', 'stroke-linecap': 'round' }, g);
-    },
-    sun(g) {
-      const r = s('g', { class: 'fb spinSlow' }, g);
-      for (let i = 0; i < 12; i++) s('path', ink({ d: 'M-10 -64 L0 -92 L10 -64 Z', fill: C.ochre, transform: `rotate(${i * 30})` }, 3), r);
-      s('circle', ink({ cx: 0, cy: 0, r: 58, fill: '#efc46e' }), g);
-      s('circle', { cx: -20, cy: -8, r: 6, fill: INK }, g); s('circle', { cx: 20, cy: -8, r: 6, fill: INK }, g);
-      s('circle', { cx: -32, cy: 12, r: 8, fill: C.terra, opacity: 0.5 }, g); s('circle', { cx: 32, cy: 12, r: 8, fill: C.terra, opacity: 0.5 }, g);
-      s('path', ink({ d: 'M-18 16 Q0 32 18 16', fill: 'none' }, 4), g);
-    },
-    dog(g) {
-      s('ellipse', ink({ cx: 0, cy: 0, rx: 58, ry: 54, fill: '#c79b6e' }), g);
-      s('path', ink({ d: 'M-50 -30 Q-86 -20 -78 40 Q-56 40 -44 4 Z M50 -30 Q86 -20 78 40 Q56 40 44 4 Z', fill: C.cocoa }), g);
-      s('ellipse', { cx: 22, cy: -16, rx: 18, ry: 16, fill: C.cream }, g);
-      s('circle', { cx: -20, cy: -14, r: 6, fill: INK }, g); s('circle', { cx: 22, cy: -14, r: 6, fill: INK }, g);
-      s('ellipse', ink({ cx: 0, cy: 22, rx: 30, ry: 22, fill: C.cream }, 3.5), g);
-      s('ellipse', { cx: 0, cy: 12, rx: 11, ry: 8, fill: INK }, g);
-      s('path', ink({ d: 'M0 20 v8 M-12 32 q12 10 24 0', fill: 'none' }, 3), g);
-      s('path', ink({ d: 'M-6 38 q6 18 12 0', fill: C.rose }, 3), g);
-    },
-    hat(g) {
-      s('ellipse', ink({ cx: 0, cy: 40, rx: 100, ry: 26, fill: '#d9b77e' }), g);
-      s('path', ink({ d: 'M-56 40 Q-60 -50 0 -54 Q60 -50 56 40 Z', fill: '#e3c590' }), g);
-      s('path', ink({ d: 'M-56 22 Q0 34 56 22 L56 40 Q0 52 -56 40 Z', fill: C.terra }, 3.5), g);
-      for (let i = 0; i < 5; i++) s('circle', ink({ cx: 34 + Math.cos(i * 1.256) * 9, cy: 14 + Math.sin(i * 1.256) * 9, r: 6, fill: C.white }, 2.5), g);
-      s('circle', { cx: 34, cy: 14, r: 4, fill: C.ochre }, g);
-    },
-    bus(g) {
-      s('rect', ink({ x: -100, y: -60, width: 200, height: 110, rx: 22, fill: C.ochre }), g);
-      for (let i = 0; i < 3; i++) s('rect', ink({ x: -84 + i * 50, y: -44, width: 40, height: 40, rx: 8, fill: '#cfe0e3' }, 3), g);
-      s('rect', ink({ x: 66, y: -44, width: 22, height: 74, rx: 6, fill: '#cfe0e3' }, 3), g);
-      s('rect', { x: -100, y: 8, width: 160, height: 10, fill: C.terra }, g);
-      s('circle', ink({ cx: 92, cy: 30, r: 7, fill: '#f6e3a4' }, 3), g);
-      for (const x of [-56, 56]) { s('circle', ink({ cx: x, cy: 52, r: 22, fill: '#5a4a40' }), g); s('circle', { cx: x, cy: 52, r: 8, fill: C.stone }, g); }
-    },
-    cup(g) {
-      s('path', ink({ d: 'M48 -24 Q96 -24 90 14 Q84 46 44 40', fill: 'none' }, 18), g);
-      s('path', { d: 'M48 -24 Q96 -24 90 14 Q84 46 44 40', fill: 'none', stroke: C.teal, 'stroke-width': 10, 'stroke-linecap': 'round' }, g);
-      s('path', ink({ d: 'M-60 -44 H60 L50 54 Q48 70 30 70 H-30 Q-48 70 -50 54 Z', fill: C.teal }), g);
-      s('ellipse', ink({ cx: 0, cy: -44, rx: 60, ry: 12, fill: '#8a6c58' }, 3.5), g);
-      s('path', { d: 'M-30 4 q30 16 60 0', stroke: C.white, 'stroke-width': 6, fill: 'none', 'stroke-linecap': 'round', opacity: 0.6 }, g);
-      const steam = s('g', { class: 'bob' }, g);
-      s('path', { d: 'M-20 -64 q-12 -14 0 -28 q12 -14 0 -28 M16 -64 q-12 -14 0 -28 q12 -14 0 -28', stroke: C.stone, 'stroke-width': 5, fill: 'none', 'stroke-linecap': 'round', opacity: 0.7 }, steam);
-    },
-    pig(g) {
-      s('path', ink({ d: 'M-56 -36 L-50 -84 L-18 -52 Z M56 -36 L50 -84 L18 -52 Z', fill: '#e3a9a0' }), g);
-      s('ellipse', ink({ cx: 0, cy: 0, rx: 70, ry: 58, fill: C.rose }), g);
-      s('circle', { cx: -24, cy: -14, r: 6, fill: INK }, g); s('circle', { cx: 24, cy: -14, r: 6, fill: INK }, g);
-      s('ellipse', ink({ cx: 0, cy: 18, rx: 28, ry: 20, fill: '#e8b5ac' }, 3.5), g);
-      s('ellipse', { cx: -9, cy: 18, rx: 5, ry: 7, fill: INK }, g); s('ellipse', { cx: 9, cy: 18, rx: 5, ry: 7, fill: INK }, g);
-      s('path', ink({ d: 'M-14 44 q14 8 28 0', fill: 'none' }, 3), g);
-    },
-    bed(g) {
-      s('rect', ink({ x: -100, y: -70, width: 26, height: 130, rx: 8, fill: C.wood }), g);
-      s('rect', ink({ x: 74, y: -30, width: 26, height: 90, rx: 8, fill: C.wood }), g);
-      s('rect', ink({ x: -80, y: -10, width: 160, height: 40, rx: 10, fill: C.white }), g);
-      s('ellipse', ink({ cx: -46, cy: -20, rx: 30, ry: 16, fill: C.cream }, 3.5), g);
-      s('path', ink({ d: 'M-22 -14 H80 V30 H-22 Q-34 8 -22 -14 Z', fill: C.blue }), g);
-      s('path', { d: 'M0 -14 v44 M30 -14 v44 M60 -14 v44', stroke: '#5f7f9a', 'stroke-width': 3 }, g);
-      s('rect', ink({ x: -90, y: 30, width: 180, height: 18, rx: 6, fill: C.woodD }), g);
-    },
-    fox(g) {
-      s('path', ink({ d: 'M-70 -70 L-50 -10 L-20 -40 Z M70 -70 L50 -10 L20 -40 Z', fill: C.terra }), g);
-      s('path', { d: 'M-60 -52 L-48 -22 L-34 -36 Z M60 -52 L48 -22 L34 -36 Z', fill: INK, opacity: 0.6 }, g);
-      s('path', ink({ d: 'M-72 -20 Q-60 -54 0 -54 Q60 -54 72 -20 Q60 40 0 70 Q-60 40 -72 -20 Z', fill: C.terra }), g);
-      s('path', ink({ d: 'M-72 -20 Q-40 0 -14 20 Q0 60 0 70 Q-60 40 -72 -20 Z M72 -20 Q40 0 14 20 Q0 60 0 70 Q60 40 72 -20 Z', fill: C.white }, 3), g);
-      s('circle', { cx: -26, cy: -14, r: 6, fill: INK }, g); s('circle', { cx: 26, cy: -14, r: 6, fill: INK }, g);
-      s('ellipse', { cx: 0, cy: 58, rx: 10, ry: 7, fill: INK }, g);
-    },
-  };
+  const DRAW = PICTURES;
+
 
   // ---------- Grid of cards ----------
   const bg = s('rect', { x: -400, y: -200, width: 2400, height: 1300, fill: 'transparent' }, svg);
