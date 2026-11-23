@@ -3,7 +3,8 @@
 Kilalao is a static single-page app: `app/index.html` loads one ES module, `js/main.js`. There is no bundler, framework or server code. Everything under `app/` is deployed exactly as it is.
 
 ```
-index.html ──► main.js ──┬── settings.js   (localStorage: settings + daily play time)
+index.html ──► main.js ──┬── themes.js     (six themed cubbies: entries, adult-facing goals)
+                         ├── settings.js   (localStorage: settings + daily play time)
                          ├── audio.js      (Web Audio synth, instruments, speech)
                          ├── icons.js      (shelf icons, inline SVG strings)
                          ├── parent.js     (hold-to-open lock, arithmetic gate, settings panel)
@@ -14,7 +15,7 @@ index.html ──► main.js ──┬── settings.js   (localStorage: settin
 
 ## Shell (`main.js`)
 
-- **Shelf:** two rows of icon buttons built from `TOYS`, without the toys hidden in settings. A seasonal decoration layer (`season.js`) goes on top. The shelf scrolls sideways if the screen is narrow.
+- **Shelf:** one *cubby* per theme in `THEMES` (`themes.js`), each a tinted box with a small picture badge and the entries for that theme, without the ones hidden in settings. An entry is a toy id or `learn:<subject>`; `parseEntry()` turns `learn:logic` into the Learn toy opened with `kit.opts.subject = 'logic'`, which `tracksFor(profile, subject)` in `toys/learn.js` uses to offer only that subject. A seasonal decoration layer (`season.js`) goes on top. The shelf scrolls sideways if the screen is narrow.
 - **Opening a toy:** the module is loaded with a dynamic `import()`. A full-screen `.view` holds a `.toyroot` and the round home button. The toy's default export is called as `toy(root, kit)`. The shelf and the view cross-fade with CSS transitions.
 - **Closing:** the home button calls `kit.dispose()`, which runs every registered cleanup in reverse order. The view is then removed after its fade-out.
 - **Play-time limit:** every 5 s the shell adds the elapsed time (not counting hidden tabs or an open adult panel) to the day's total in `settings.js`. When the limit is reached, the open toy closes and a "bedtime" scene fades in. Only the adult corner wakes the toys.
@@ -68,7 +69,9 @@ toys/learn.js ── profiles.js   children on this device (localStorage kilalao
               ├─ curriculum/   skill graphs: {id, age, prereq, template, params, desc}
               ├─ templates/    interactive mechanics: make(rng, params) -> item
               ├─ draw.js       objects, ten-frames, base-ten blocks, cards, numerals
-              ├─ i18n.js       prompts + number words (en, fr, mg), clip plans
+              ├─ i18n.js       prompts + number words (en, fr, mg), feeling words, clip plans
+              ├─ together.js   try-it-together cards (one per template, en + fr)
+              ├─ report.js     anonymous testing report (all subjects)
               └─ voice.js      recorded clips -> device voice -> silence
 ```
 
@@ -90,6 +93,10 @@ toys/learn.js ── profiles.js   children on this device (localStorage kilalao
   - The device-voice approximations of single sounds are in `PHON`.
   - The runner passes `ctx.sound(unit)` and `ctx.word(w)`, which play recorded clips `s/<unit>` and `w/<word>` first. An item's `extra(ctx)` speaks the sound or word right after the prompt.
   - `tracksFor(profile)` in `toys/learn.js` opens reading only in the child's language.
+- **Logic and coding** (`curriculum/logic.js`, `templates/logic.js`): 18 skills on the templates `pattern`, `oddone`, `sortit`, `path` and `debug`. In `path` the child builds a program from arrow tiles and runs it; the walker is the quest friend (`ctx.friend`). `debug` shows a program with one wrong arrow to find and fix. The test script drives these through `data-route`, `data-arrow` and `data-undo` attributes.
+- **Feelings** (`curriculum/feelings.js`, `templates/feelings.js`): 7 skills on `feelFind`, `feelScene` (five wordless situation scenes, followed by a spoken "why"), `feelHelp` and `breathe` (flower and candle, three slow cycles; the glowing target carries the `invite` class on its inner `g.fb`, like every other template). `feelFace()` draws the five feelings on any animal. Feeling words are spoken through `{feel}` and recorded as `e/<feeling>`.
+- **Runner hooks** (`toys/learn.js`): templates receive `ctx.audio`, `ctx.friend` (the quest friend's kind), `ctx.avatar` (the child's animal); the returned item may have `init()` (called after `build`) and `after()` (awaited after a right answer, e.g. to let the walker finish its route).
+- **Adult corner** (`parent.js`): `subjects(profile)` lists numbers, reading (in the child's language), thinking and coding, and feelings; each gets a `mastery.summary()` line and rows in the skills table. A *Themes* section lists each cubby's goals from `themes.js`. *Try it together* shows `recentCards()` from `together.js`: one card per template the child practised in the last 14 days (newest first, at most three), in English for English profiles and in French otherwise.
 - **Testing kit** (`report.js`, adult panel):
   - The runner logs quest events (`ev: start | end | stuck`) and each solved item's hint level and time (`ms`).
   - Adults add tagged observations (`profiles.addObs`).
@@ -114,6 +121,12 @@ toys/learn.js ── profiles.js   children on this device (localStorage kilalao
   - One light from the upper left. `shade()` draws a shape with a soft coloured form shadow (an offset copy clipped to the shape, so it follows the outline and moves with the rig), an optional light patch and an outline in a deep tone of the shape's own colour.
   - `finish(g)` applies the same lighting automatically to flat drawings after they are drawn: the 32 reading pictures, the counting objects and the Phonics cards.
   - Helpers for eyes with catch-lights, fluffy edges and contact shadows. No SVG filters, so drawing stays cheap on low-end tablets.
+## Story library (`toys/stories.js`, `stories/library.js`)
+
+Books are data: each has a title, pages (`{ scene, en, fr }`), a closing open question (`ask`) and an optional `decodable` language. `toys/stories.js` draws the shelf of covers and each page scene from a small vocabulary of elements (backgrounds, the fox, feeling faces, objects). Words are separate SVG `text` elements; while the device voice reads a sentence, each word lights up on an estimated timing, and touching a word says it alone. Malagasy profiles get the French books until Malagasy texts are written.
+
+## Learn engine, continued
+
 - **Privacy:** profiles and the attempt log (the last 1,500 answers) stay in `localStorage` and never leave the device.
 
 ## Android wrapper
@@ -128,4 +141,4 @@ toys/learn.js ── profiles.js   children on this device (localStorage kilalao
 
 ## Testing
 
-`tools/shoot.py` starts headless Chromium with Playwright, opens the shelf and each toy in turn, taps once in the middle, saves a screenshot to `build/shots/` and fails if any page error or console error occurs.
+`tools/learn-test.py [subject or skill ...]` plays a full lesson for each skill (watch, together, one wrong independent answer to trigger the help, then right answers) and fails on any JavaScript error or a lesson that does not end. `tools/shoot.py` starts headless Chromium with Playwright, opens the shelf and each shelf entry in turn, taps once in the middle, saves a screenshot to `build/shots/` and fails if any page error or console error occurs.

@@ -5,9 +5,24 @@ import * as mastery from './learn/mastery.js';
 import { LANGS } from './learn/i18n.js';
 import { MATH } from './learn/curriculum/math.js';
 import { READING } from './learn/curriculum/reading.js';
+import { LOGIC } from './learn/curriculum/logic.js';
+import { FEEL } from './learn/curriculum/feelings.js';
 import { TAGS, buildReport, lastQuest } from './learn/report.js';
+import { recentCards } from './learn/together.js';
+import { THEMES } from './themes.js';
 
 const HOLD_MS = 2200;
+
+// The subjects reported per child, in shelf order. Reading depends on the
+// child's language (none yet for Malagasy).
+export function subjects(p) {
+  return [
+    { id: 'math', name: 'Numbers', skills: MATH },
+    { id: 'reading', name: `Reading (${LANGS[p.lang] ? LANGS[p.lang].name : p.lang})`, skills: READING[p.lang] || [] },
+    { id: 'logic', name: 'Thinking & coding', skills: LOGIC },
+    { id: 'feel', name: 'Feelings', skills: FEEL },
+  ];
+}
 const NAMES = {
   learn: 'Learn (adaptive lessons)', busyboard: 'Busy Board', shapes: 'Shapes', blocks: 'Blocks', silly: 'Silly Blocks', marble: 'Marble Machine',
   town: 'Town & Shops', house: 'House & Dress-Up', code: 'Code Factory', sequencer: 'Sequencer', radio: 'Radio',
@@ -82,6 +97,11 @@ function panel(card, ctx) {
       <p class="muted">Each child has their own adaptive path. Lessons start near the child's age and adjust to what they know. Children never see scores; this report is only for you.</p>
       <div data-profiles></div>
       <div class="btns"><button class="btn" data-addp>Add a child</button></div>
+    </section>
+    <section>
+      <h3>Themes</h3>
+      <p class="muted">The shelf is arranged in six themed cubbies. Each holds the guided lessons for that theme next to free-play toys that practise the same ideas. Children recognise a cubby by its colour and picture; these names are only for you.</p>
+      <dl class="themes">${THEMES.map((t) => `<dt><span class="swatch" style="background:${t.tint.replace(/[\d.]+\)$/, '.6)')}"></span>${esc(t.name)}</dt><dd>${esc(t.goals)}<br><span class="muted">${t.items.map((id) => esc(NAMES[id] || id)).join(' · ')}</span></dd>`).join('')}</dl>
     </section>
     <section>
       <h3>Testing with children</h3>
@@ -177,7 +197,6 @@ function renderProfiles(box, redraw) {
   if (!list.length) profiles.active();
   const opt = (v, cur, label) => `<option value="${v}" ${String(v) === String(cur) ? 'selected' : ''}>${label}</option>`;
   box.innerHTML = profiles.list().map((p) => {
-    const sum = mastery.summary(MATH, p.id, p);
     const week = profiles.log(p.id).filter((e) => e.t > Date.now() - 7 * 86400000);
     const recent = week.filter((e) => 'ok' in e); // first answers to independent items
     const acc = recent.length ? Math.round((100 * recent.filter((e) => e.ok).length) / recent.length) : null;
@@ -186,20 +205,28 @@ function renderProfiles(box, redraw) {
     const helped = hints.filter((e) => e.hint > 0).length, heavy = hints.filter((e) => e.hint >= 3).length;
     const helpLine = hints.length ? ` Help needed on ${helped} of ${hints.length} items${heavy ? ` (${heavy} needed a full demonstration)` : ''}.` : '';
     const quests = ((p.village && p.village.helped) || []).length;
-    const RS = READING[p.lang] || [];
-    const rsum = RS.length ? mastery.summary(RS, p.id, p) : null;
-    const readLine = rsum ? `<p><b>Reading (${esc(LANGS[p.lang].name)}):</b> ${rsum.mastered} of ${RS.length} skills secure, ${rsum.practising} in practice${rsum.assumed ? `, ${rsum.assumed} assumed from age` : ''}. Working on: ${rsum.next.length ? rsum.next.map((s) => esc(s.desc)).join('; ') : 'all secure'}.</p>` : `<p class="muted"><b>Reading:</b> not yet available in ${esc(LANGS[p.lang].name)} (it needs recorded sounds). Switch the language to English or French to try it.</p>`;
-    const readRows = rsum ? rsum.rows.map((r) => `<tr><td>${esc(r.skill.desc)}</td><td>${r.skill.age}</td><td>${r.status === 'assumed' ? 'assumed (age)' : r.status}</td><td>${r.n ? `${r.c}/${r.n}` : ''}</td></tr>`).join('') : '';
-    const rows = sum.rows.map((r) => `<tr><td>${esc(r.skill.desc)}</td><td>${r.skill.age}</td><td>${r.status === 'assumed' ? 'assumed (age)' : r.status}</td><td>${r.n ? `${r.c}/${r.n}` : ''}</td></tr>`).join('');
+    const row = (r) => `<tr><td>${esc(r.skill.desc)}</td><td>${r.skill.age}</td><td>${r.status === 'assumed' ? 'assumed (age)' : r.status}</td><td>${r.n ? `${r.c}/${r.n}` : ''}</td></tr>`;
+    const subj = subjects(p).map((sb) => {
+      if (!sb.skills.length) return { html: `<p class="muted"><b>${esc(sb.name)}:</b> not yet available in this language (it needs recorded sounds). Switch the language to English or French to try it.</p>`, rows: '' };
+      const sum = mastery.summary(sb.skills, p.id, p);
+      return {
+        html: `<p><b>${esc(sb.name)}:</b> ${sum.mastered} of ${sb.skills.length} skills secure, ${sum.practising} in practice${sum.assumed ? `, ${sum.assumed} assumed from age (checked gradually in review)` : ''}. <span class="muted">Working on: ${sum.next.length ? sum.next.map((s) => esc(s.desc)).join('; ') : 'everything in this track is secure'}.</span></p>`,
+        rows: `<tr><th colspan="4">${esc(sb.name)}</th></tr>` + sum.rows.map(row).join(''),
+      };
+    });
+    const cards = recentCards(p.id, p.lang);
+    const together = cards.length
+      ? `<div class="together"><b>Try it together</b> <span class="muted">(away from the screen, based on what ${esc(p.name)} practised recently)</span><ul>${cards.map((c) => `<li>${esc(c.text)}</li>`).join('')}</ul></div>`
+      : '';
     return `<div class="profile" data-id="${p.id}">
       <label class="row-set"><span>Name</span><input type="text" data-f="name" value="${esc(p.name)}" maxlength="30"></label>
       <label class="row-set"><span>Age</span><select data-f="age">${[3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((a) => opt(a, p.age, a)).join('')}</select></label>
       <label class="row-set"><span>Language</span><select data-f="lang">${Object.entries(LANGS).map(([k, v]) => opt(k, p.lang, v.name)).join('')}</select></label>
       <label class="row-set"><span>Animal</span><select data-f="avatar">${profiles.AVATARS.map((a) => opt(a, p.avatar, a)).join('')}</select></label>
-      <p><b>Math:</b> ${sum.mastered} of ${MATH.length} skills secure, ${sum.practising} in practice${sum.assumed ? `, ${sum.assumed} assumed from age (checked gradually in review)` : ''}.${acc !== null ? ` Last 7 days: ${recent.length} answers, ${acc}% right first time.` : ' No practice yet.'}${helpLine}${quests ? ` Friends helped in the village: ${quests}.` : ''}</p>
-      <p class="muted">Working on: ${sum.next.length ? sum.next.map((s) => esc(s.desc)).join('; ') : 'everything in this track is secure'}.</p>
-      ${readLine}
-      <details><summary>All skills</summary><table class="skills"><tr><th>Skill</th><th>Age</th><th>Status</th><th>Right</th></tr>${rows}${readRows}</table></details>
+      <p>${acc !== null ? `Last 7 days: ${recent.length} answers, ${acc}% right first time.` : 'No practice in the last 7 days.'}${helpLine}${quests ? ` Friends helped in the village: ${quests}.` : ''}</p>
+      ${subj.map((x) => x.html).join('')}
+      ${together}
+      <details><summary>All skills</summary><table class="skills"><tr><th>Skill</th><th>Age</th><th>Status</th><th>Right</th></tr>${subj.map((x) => x.rows).join('')}</table></details>
       <div class="btns"><button class="btn" data-remove>Remove this child</button></div>
     </div>`;
   }).join('');

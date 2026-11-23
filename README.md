@@ -1,6 +1,6 @@
 # Kilalao
 
-**A calm digital playroom and adaptive learning app for children aged 2 to 12.** Seventeen open-ended toys sit on a wooden shelf. There is no text, no instructions, no scores, no levels, no timers, no ads, no links and no purchases. Everything is drawn and synthesized in the browser, so the whole app works offline once it has been opened.
+**A calm digital playroom and adaptive learning app for children aged 2 to 12.** A wooden shelf holds six themed cubbies, each with guided lessons next to open-ended toys on the same ideas: eighteen toys in all, plus adaptive lessons in numbers, reading, thinking and coding, and feelings. There is no text, no instructions, no scores, no levels, no timers, no ads, no links and no purchases. Everything is drawn and synthesized in the browser, so the whole app works offline once it has been opened.
 
 *Kilalao* means "toy" or "play" in Malagasy.
 
@@ -18,14 +18,29 @@ Kilalao draws on Montessori and low-stimulation ideas about play:
 | Child-led exploration | Every toy is a sandbox with no goal, no right answer and no "next level". |
 | Real cause and effect | Each touch does one clear, physical thing: a switch lights a bulb, a frog jumps to a lily pad. |
 | Calm senses | A muted palette, slow easing, quiet synthesized sounds, no confetti, no stars and no praise voice-overs. |
-| No reading required | Toys contain no words. The only letters are the ones in Phonics, which is about letters. |
+| No reading required | Toys contain no words. The only letters are in the reading activities (Phonics, Stories and the reading lessons), which are about letters. |
 | Order and care | Pieces can be tidied back into their trays. The shelf is a fixed and predictable place to come back to. |
 | Limits set by adults | A daily play-time limit lets the toys gently fall asleep instead of cutting play off abruptly. |
 | Inclusion | People in Town and House have a range of skin tones and hair. Some wear glasses or hearing aids, and some use a wheelchair or a prosthetic leg. |
 
+## The themed shelf
+
+The shelf is arranged like the areas of a Montessori classroom (`app/js/themes.js`). Children recognise each cubby by its colour and picture; the names and goals are shown only to adults, in the adult corner.
+
+| Cubby | Lessons and toys | Goals |
+|---|---|---|
+| **Numbers & shapes** | Learn: numbers · Shapes · Blocks | Counting, number sense, operations, place value, fractions; shapes and spatial thinking |
+| **Letters & stories** | Learn: letters and sounds · Stories · Phonics · Busy Book | Letter sounds, rhyme, blending, spelling; listening to and talking about stories |
+| **Thinking & coding** | Learn: thinking and coding · Code Factory · Marble Machine · Busy Board | Patterns, sorting, sequencing instructions, debugging; cause and effect |
+| **Nature & the world** | Islands · Space · Dinosaurs · World Puzzle | Exploring places, animals, planets and long-ago creatures |
+| **Me & others** | Learn: feelings · Town & Shops · House & Dress-Up · Silly Blocks | Naming feelings and their causes, kindness, calming down; pretend play |
+| **Art & music** | Drawing · Sequencer · Radio | Drawing, rhythm, melody; open-ended creating |
+
+Each *Learn* entry opens the same adaptive Learn area on one subject. Why the app is built this way, and which apps and studies it learns from, is in [docs/BENCHMARK.md](docs/BENCHMARK.md).
+
 ## Learn: an educational game (ages 3–12)
 
-The first item on the shelf, **Learn**, is a quest game in which the maths *is* the gameplay.
+**Learn** is a quest game in which the maths, reading, coding or feelings activity *is* the gameplay.
 
 **The quest village.**
 - The guide owl sits by a small village. Two or three animal friends wait on the path, each with a picture bubble showing what they need: apples counted into a basket, a number built from tens and ones, fruit shared fairly.
@@ -59,7 +74,8 @@ A short review of earlier skills closes the lesson. A skill the child already ha
 - **Activities to do, not only to choose:** touch-to-count (one-to-one correspondence and "the last number tells how many"), counting out a requested amount into a basket, building numbers from tens rods and ones cubes, and matching, comparing, number lines, number bonds, equal groups, sharing and fractions.
 - **Calm feedback:** a soft chime for a right answer and a demonstration rather than a buzzer after a wrong one. Children never see scores, stars, streaks or rewards.
 - **Three languages:** English, French and Malagasy prompts and number words. Recorded voice packs are used when present (needed for Malagasy, see `app/audio/README.md`), otherwise the device voice, otherwise silence. From age 7 the question is also shown as text.
-- **Adult report:** each child's skills are listed as secure, in practice, assumed from age or not started, with recent accuracy and what they are working on.
+- **Adult report:** for every subject (numbers, reading, thinking and coding, feelings), each child's skills are listed as secure, in practice, assumed from age or not started, with recent accuracy and what they are working on.
+- **Try it together:** for the activities a child practised recently, the adult corner suggests a short activity to do at home, away from the screen (count the stairs together, play "robot" with directions, make feeling faces in a mirror). Cards are in English and French (`app/js/learn/together.js`).
 
 **The cast.** Every character is a rigged SVG puppet with separate parts and pivots, animated in three layers:
 - *idle*: breathing, blinking, glancing at what is happening;
@@ -82,9 +98,22 @@ French silent letters are shown faded. Reading is offered in the child's own lan
 
 **Testing with children.** The adult corner has a *Testing with children* section: one-tap observations, notes, and an anonymous report to copy and share. The protocol is in [docs/CHILD-TESTING.md](docs/CHILD-TESTING.md).
 
-**Phase 1: Math, 39 skills from age 3 to about 10,** built from 11 activity templates. Reading, logic and coding, and social-emotional learning follow. See [docs/ROADMAP.md](docs/ROADMAP.md).
+**Thinking & coding (18 skills, 5 activities).**
+- *pattern:* continue a colour, shape or growing pattern;
+- *odd one out:* find the one that does not belong (colour, kind, category);
+- *sort:* sort things into baskets by a rule;
+- *path:* put arrows in order to walk the quest friend along a road (coding);
+- *debug:* find and fix the wrong arrow in a program.
 
-## The 17 toys
+**Feelings (7 skills, 4 activities).**
+- *find:* find the face that shows a feeling (happy, sad, angry, scared, surprised);
+- *scene:* a friend in a little wordless scene; say how they feel, then hear why;
+- *help:* choose what could help a sad friend;
+- *breathe:* "smell the flower, blow out the candle", three slow breaths.
+
+**Math: 39 skills from age 3 to about 10,** built from 11 activity templates. See [docs/ROADMAP.md](docs/ROADMAP.md) for what comes next.
+
+## The 18 toys
 
 | # | Toy | What happens |
 |---|---|---|
@@ -105,6 +134,7 @@ French silent letters are shown faded. Reading is offered in the child's own lan
 | 15 | **Dinosaurs** | Friendly dinosaurs stroll and can be carried. Each reacts when tapped, a volcano puffs, a pterosaur circles the sky and eggs hatch after three taps. |
 | 16 | **Phonics** | Nine picture cards (cat, sun, dog, hat, bus, cup, pig, bed, fox). Each letter lights up with its sound, then the letters slide together and the word is said. |
 | 17 | **Drawing** | A crayon-textured paper with nine colours, a rainbow crayon, three sizes and an eraser. Several fingers can draw at once. Starting a new sheet needs a short hold. |
+| 18 | **Stories** | A library of six original picture books in English and French. Each word lights up as it is read, touching a word says it again, and each book ends with one open question for the adult and child to talk about. *Sam Sat* and *Le rat et la lune* are decodable books. |
 
 ## Adult corner
 
@@ -119,7 +149,8 @@ Adults can change the following:
 - **Calm mode:** fewer particles and slower motion.
 - **Daily play-time limit:** when the limit is reached, the toys fall asleep under a starry sky. Waking them from the adult corner resets the day's count.
 - **Seasons** on the shelf (follow the calendar, off, or a fixed season) and the **hemisphere** (auto-detected from the time zone).
-- **Learning:** add a profile for each child (name, age 3–12, language, animal). The panel shows each child's progress report.
+- **Learning:** add a profile for each child (name, age 3–12, language, animal). The panel shows each child's progress in every subject and *Try it together* activities.
+- **Themes:** the six shelf cubbies and the learning goals of each.
 - **Phonics voice:** the device's built-in, offline speech synthesis.
 - **Hide toys** from the shelf.
 
@@ -209,6 +240,7 @@ app/                     Everything that is served (deployed as-is)
   icons/                 App icons (SVG + PNG, incl. maskable)
   js/
     main.js              Shelf, toy loading, kit, play-time limit, SW registration
+    themes.js            The six themed cubbies and their goals
     lib.js               Palette, SVG/canvas stages, pointer helpers, loop
     audio.js             Synthesized sounds, instruments, speech
     settings.js          Adult settings and daily play time (localStorage)
@@ -219,12 +251,15 @@ app/                     Everything that is served (deployed as-is)
     toys/<id>.js         One file per toy (toys/learn.js runs the Learn sessions)
     learn/               Learning engine: profiles, mastery (BKT), scheduler,
                          i18n (en/fr/mg), voice, drawing kit,
-                         curriculum/<subject>.js (skill graphs), templates/<subject>.js
+                         curriculum/<subject>.js (skill graphs), templates/<subject>.js,
+                         together.js (try-it-together cards), report.js (testing report)
+    stories/library.js   The story library (books as data; toys/stories.js draws them)
   audio/                 Optional recorded voice packs (manifest.json + clips)
 android/                 Native Android wrapper (WebView + bundled app/)
 docs/ARCHITECTURE.md     How the pieces fit together
 docs/PEDAGOGY.md         Teaching and game-design principles, with evidence
 docs/CHILD-TESTING.md    How to run a testing session with children and share the report
+docs/BENCHMARK.md        The best educational apps, why they work, what Kilalao takes from them
 tools/shoot.py           Headless smoke test and screenshots
 tools/learn-test.py      Plays every Learn skill (wrong answer, help, right answers)
 tools/recording-script.mjs  Prints the voice-recording script for a language
@@ -248,7 +283,7 @@ tools/recording-script.mjs  Prints the voice-recording script for a language
    }
    ```
 
-2. Add `<id>` to `TOYS` in `app/js/main.js` and to the `TOYS` list in `tools/shoot.py`.
+2. Add `<id>` to `TOYS` in `app/js/main.js`, to a cubby's `items` in `app/js/themes.js`, and to the `TOYS` list in `tools/shoot.py`.
 3. Add a shelf icon to `ICONS` in `app/js/icons.js` and a name to `NAMES` in `app/js/parent.js` (the name is only shown to adults).
 4. Add the file to `FILES` in `app/sw.js` and bump `VERSION`.
 5. Run `python3 tools/shoot.py` and check the screenshot.
@@ -259,15 +294,15 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the design rules every toy must follo
 
 Most curriculum work is data:
 
-1. To add a **skill**, add one line to `app/js/learn/curriculum/math.js` with an id, typical age, prerequisites, template, parameters and an adult-facing description.
+1. To add a **skill**, add one line to `app/js/learn/curriculum/<subject>.js` (math, reading, logic or feelings) with an id, typical age, prerequisites, template, parameters and an adult-facing description.
 2. To add a **template** (a new interactive mechanic), add an entry to `TEMPLATES` in `app/js/learn/templates/<subject>.js`. Its `make(rng, params)` returns `{ key, vars, guess, build(ctx) }`. `build` draws the item and answers through `ctx.choices()` or `ctx.pick()`. It returns `{ help, solve, guided }`:
    - `help()` teaches the method on the current example using `ctx.point()` and `ctx.press()`.
    - `solve()` is the full worked example for *Watch*.
    - `guided: true` means the template scaffolds *Together* itself (check `ctx.mode`).
 
    Every template needs a real demonstration: a child must be able to learn the skill from *Watch* and *help* alone, without sound.
-3. New prompts go into all three languages in `app/js/learn/i18n.js`.
-4. Run `python3 tools/learn-test.py <skill-id>` and look at `build/learn/`. To try a skill by hand, open `http://localhost:4210/?skill=math.<id>` and tap Learn.
+3. New prompts go into all three languages in `app/js/learn/i18n.js`. A new template also needs a *Try it together* card (en and fr) in `app/js/learn/together.js`.
+4. Run `python3 tools/learn-test.py <skill-id or subject>` and look at `build/learn/`. To try a skill by hand, open `http://localhost:4210/?skill=math.<id>` and tap Learn.
 
 ## Licence
 

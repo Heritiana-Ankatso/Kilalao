@@ -1,7 +1,12 @@
 #!/usr/bin/env node
 // Prints the recording script for a Learn voice pack: every clip name and the
 // text to read. Usage: node tools/recording-script.mjs mg [maxNumber]
-import { PROMPTS, numberWord, fractionName } from '../app/js/learn/i18n.js';
+// Prompt keys come straight from i18n.js, so new prompts (the feelings and
+// logic tracks: whoFeels, scene*, why*, whatHelps, breatheStart, smell, blow,
+// pattern and coding prompts...) are included automatically. Feeling words
+// are recorded as e/<feeling>. The story library is read by the device voice
+// for now (recorded story narration is a later step).
+import { PROMPTS, FEEL_WORDS, numberWord, fractionName } from '../app/js/learn/i18n.js';
 import { PHON, WORDS, SPELLING } from '../app/js/learn/curriculum/reading.js';
 
 const lang = process.argv[2] || 'mg';
@@ -18,6 +23,9 @@ for (const [key, tpl] of Object.entries(table)) {
 }
 for (let n = 0; n <= maxN; n++) rows.push([`n/${n}`, numberWord(n, lang)]);
 for (const f of ['1/2', '1/3', '2/3', '1/4', '2/4', '3/4', '1/5', '2/5', '3/5', '4/5', '1/6', '5/6', '1/8', '3/8', '5/8', '7/8']) rows.push([`f/${f.replace('/', '-')}`, fractionName(f, lang)]);
+
+// Feelings: the feeling word on its own, used for {feel} in prompts.
+for (const [f, w] of Object.entries(FEEL_WORDS[lang] || FEEL_WORDS.en)) rows.push([`e/${f}`, w]);
 
 // Reading: single speech sounds (say the sound, not the letter name) and whole words.
 for (const u of Object.keys(PHON[lang] || {})) rows.push([`s/${u}`, `SOUND of "${u}" (as in the guide: ${PHON[lang][u]})`]);

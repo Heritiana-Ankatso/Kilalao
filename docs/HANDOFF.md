@@ -1,4 +1,4 @@
-# Handoff: "best educational gaming app" update (1.7.0, in progress)
+# Handoff: "best educational gaming app" update (1.7.0, complete on the branch)
 
 **The request:** organise the app by theme, study the best educational apps and why they work, then add their key features to Kilalao.
 
@@ -27,29 +27,29 @@
 - **Tests:** `tools/learn-test.py` covers the feel and logic skills, can filter by subject (`learn-test.py logic`), and can solve the coding activities through the `data-route`, `data-arrow` and `data-undo` attributes. `tools/shoot.py` uses the new shelf entry ids.
 - **Version:** 1.7.0 (versionCode 8); `sw.js` cache list updated.
 
-## Still to do (in order)
+## Completed in the follow-up commit
 
-1. **Run the tests and fix failures.** Start `python3 -m http.server 4210 -d app` in the background, then run each of these (each takes 10–30 minutes):
-   - `python3 tools/learn-test.py logic`
-   - `python3 tools/learn-test.py feel`
-   - `python3 tools/shoot.py`
+1. **Tests run, one bug fixed.**
+   - **Bug:** in `breathe`, the glow (`invite` class) went on the outer card group instead of the inner `g.fb`, unlike every other template. The glowing flower and candle therefore animated from the wrong origin, and the test script could not find them. Fixed in `templates/feelings.js`; the test needed no extra case.
+   - `python3 tools/learn-test.py logic`: **all 18 logic skills ok**.
+   - `python3 tools/learn-test.py feel`: **all 7 feelings skills ok** (including `breathe`).
+   - `python3 tools/shoot.py`: **all 22 shelf entries ok**, no JavaScript errors.
+   - The adult corner and the testing report were checked in headless Chromium with seeded data (a French profile and a Malagasy profile): no errors.
+   - **Test gap:** for `sortit`, `debug` and `breathe`, the script's deliberate wrong answer is not registered as wrong (4 of 4 right), so the help-after-a-mistake path is not exercised for these templates. `breathe` cannot be answered wrongly by design.
+   - The math and reading lessons were not re-run (their code did not change).
+2. **Adult corner** (`parent.js`): every subject (numbers, reading in the child's language, thinking and coding, feelings) has a summary line and rows in the skills table; a new **Themes** section lists each cubby's goals and entries from `themes.js`. `learn/report.js` reports all four paths and every skill's description.
+3. **Try it together** (`app/js/learn/together.js`, listed in `sw.js`): one at-home activity per template (25 templates) in English and French. The adult corner shows up to three cards for the templates practised in the last 14 days; the testing report includes them. French and Malagasy profiles get the French cards.
+4. **`docs/BENCHMARK.md`** written from the notes below, with sources.
+5. **Docs updated:** `README.md` (themed shelf, new tracks, Stories as the 18th toy, adult corner), `docs/ARCHITECTURE.md` (themes, logic and feelings tracks, runner hooks, story library, adult corner, tests), `docs/ROADMAP.md` (phase status), `tools/recording-script.mjs` (`e/<feeling>` clips; new prompt keys were already picked up automatically from `i18n.js`).
+6. **APK not built:** `android/keystore.properties` is not in the cloud session, so the release build was skipped. Build it on the machine that has the keystore: `cd android && ./gradlew assembleRelease`.
 
-   The `breathe` skill completes only after 3 slow cycles. Check that the test script presses the glowing flower and candle (`g.tap > g.fb.invite`); if not, add a case for it.
-2. **Adult corner** (`app/js/parent.js`):
-   - Make the per-child report loop over every subject: math, reading, logic and feel (today it shows only math and reading).
-   - Add a **Themes** section that lists each theme's `goals` from `themes.js`.
-   - Make `learn/report.js` include the LOGIC and FEEL skills.
-3. **"Try it together" cards** (joint media engagement, the "socially interactive" pillar):
-   - Write a short at-home activity for each template, e.g. *count the stairs together* or *find patterns on clothes*, in en and fr.
-   - Show the cards in the adult corner for the skills the child practised recently, and include them in the report.
-4. **Write `docs/BENCHMARK.md`**: the best apps, why they work, and what Kilalao takes from each. Sources and notes are below.
-5. **Update the docs:**
-   - `README.md` and `docs/ARCHITECTURE.md`: themes, the new tracks and stories.
-   - `docs/ROADMAP.md`: phase status.
-   - `tools/recording-script.mjs`: add the new prompt keys and the `e/<feeling>` clips.
-6. **Release:**
-   - Build the APK: `cd android && ./gradlew assembleRelease --offline`. Release signing needs `android/keystore.properties`, which is git-ignored and is **not** in a fresh cloud session. If it is missing, build debug only or skip the APK, and say so.
-   - Commit and push to `claude/serene-sagan-ifgo32` only. Do not merge to `main` without the owner's permission.
+## Still needs a person
+
+- **Native-speaker review:** French and Malagasy prompts and feeling words (`i18n.js`), French story texts (`stories/library.js`), French try-it-together cards (`together.js`).
+- **Recordings:** Malagasy voice pack (`node tools/recording-script.mjs mg`), including the new feelings prompts and `e/<feeling>` clips.
+- **Testing with children:** see `docs/CHILD-TESTING.md`, especially the coding (`path`, `debug`) and feelings activities.
+- **Educator review** of the logic and feelings skill order and ages.
+- **Release:** signed APK, then the owner's permission to merge `claude/serene-sagan-ifgo32` into `main`.
 
 ## Benchmark notes (for docs/BENCHMARK.md)
 

@@ -256,7 +256,7 @@ export const TEMPLATES = {
           const ring = s('circle', { cx: 800, cy: 470, r: 30, fill: 'none', stroke: C.teal, 'stroke-width': 6, opacity: 0.5 }, L);
           ring.style.transition = 'r 3s ease-in-out';
           let phase = 'in', count = 0, done = false;
-          const glow = (c, on) => { c.g.classList.toggle('invite', on); };
+          const glow = (c, on) => { c.inner.classList.toggle('invite', on); };
           const next = () => { glow(fl, phase === 'in'); glow(ca, phase === 'out'); ctx.say(phase === 'in' ? 'smell' : 'blow'); };
           fl.x = 560; fl.y = 470; ca.x = 1040; ca.y = 470;
           const tapFlower = async () => {

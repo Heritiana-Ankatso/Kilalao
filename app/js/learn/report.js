@@ -5,6 +5,12 @@ import * as profiles from './profiles.js';
 import * as mastery from './mastery.js';
 import { MATH } from './curriculum/math.js';
 import { READING } from './curriculum/reading.js';
+import { LOGIC } from './curriculum/logic.js';
+import { FEEL } from './curriculum/feelings.js';
+import { recentCards } from './together.js';
+
+// Every subject's skills for a profile (reading depends on the language).
+const paths = (p) => [['Math', MATH], ['Reading', READING[p.lang] || []], ['Logic', LOGIC], ['Feelings', FEEL]];
 
 export const TAGS = [
   ['understood', 'Understood what to do'],
@@ -30,7 +36,7 @@ export function buildReport(version) {
   out.push('');
   profiles.list().forEach((p, i) => {
     const log = profiles.log(p.id);
-    const skills = [...MATH, ...(READING[p.lang] || [])];
+    const skills = paths(p).flatMap(([, sk]) => sk);
     const byId = new Map(skills.map((s) => [s.id, s]));
     const starts = log.filter((e) => e.ev === 'start'), ends = new Set(log.filter((e) => e.ev === 'end').map((e) => e.qid)), stuck = new Set(log.filter((e) => e.ev === 'stuck').map((e) => e.qid));
     const left = starts.filter((e) => !ends.has(e.qid) && !stuck.has(e.qid));
@@ -59,9 +65,16 @@ export function buildReport(version) {
         out.push(`  ${id} · ${s ? s.desc : '?'} · ${r.started}/${r.left}/${r.stuck} · ${pct(r.right, r.first)} · ${r.solved ? (r.hints / r.solved).toFixed(1) : '–'} · ${r.ms.length ? (median(r.ms) / 1000).toFixed(1) : '–'}`);
       }
     }
-    const sm = mastery.summary(MATH, p.id, p);
-    out.push(`Math path: ${sm.mastered} secure, ${sm.practising} in practice, ${sm.assumed} assumed. Next: ${sm.next.map((s) => s.id).join(', ') || '–'}.`);
-    if ((READING[p.lang] || []).length) { const sr = mastery.summary(READING[p.lang], p.id, p); out.push(`Reading path: ${sr.mastered} secure, ${sr.practising} in practice, ${sr.assumed} assumed. Next: ${sr.next.map((s) => s.id).join(', ') || '–'}.`); }
+    for (const [name, sk] of paths(p)) {
+      if (!sk.length) { out.push(`${name} path: not available in ${p.lang} yet.`); continue; }
+      const sm = mastery.summary(sk, p.id, p);
+      out.push(`${name} path: ${sm.mastered} secure, ${sm.practising} in practice, ${sm.assumed} assumed (of ${sk.length}). Next: ${sm.next.map((s) => s.id).join(', ') || '–'}.`);
+    }
+    const cards = recentCards(p.id, p.lang);
+    if (cards.length) {
+      out.push('Try it together (at-home activities for recently practised skills):');
+      for (const c of cards) out.push(`  ${c.template}: ${c.text}`);
+    }
     const o = profiles.obs(p.id);
     if (o.length) {
       out.push('Adult observations:');
